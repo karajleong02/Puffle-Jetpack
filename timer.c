@@ -52,12 +52,12 @@ void interruptHandler(void) {
     REG_TM2CNT = TM_CASCADE | TIMER_ON | TM_IRQ;
   }
 
-  // Stops Timer
-  if ((REG_IF & INT_BUTTON) && (~BUTTONS & BUTTON_SELECT)) {
-    REG_TM0CNT = TIMER_OFF;
-    REG_TM1CNT = TIMER_OFF;
-    REG_TM2CNT = TIMER_OFF;
-  }
+//   // Stops Timer
+//   if ((REG_IF & INT_BUTTON) && (~BUTTONS & BUTTON_SELECT)) {
+//     REG_TM0CNT = TIMER_OFF;
+//     REG_TM1CNT = TIMER_OFF;
+//     REG_TM2CNT = TIMER_OFF;
+//   }
   
   REG_IF = REG_IF;
   REG_IME = 1;

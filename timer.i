@@ -140,7 +140,6 @@ void drawUI();
 
 extern int vOff;
 extern int hOff;
-extern int hshift;
 extern int score;
 extern int lives;
 extern float gasLevel;
@@ -197,14 +196,7 @@ void interruptHandler(void) {
     *(volatile unsigned short*)0x4000106 = 3 | (1<<7) | (1<<6);
     *(volatile unsigned short*)0x400010A = (1<<2) | (1<<7) | (1<<6);
   }
-
-
-  if ((*(volatile unsigned short*)0x4000202 & 1 << 12) && (~(*(volatile unsigned short *)0x04000130) & (1 << 2))) {
-    *(volatile unsigned short*)0x4000102 = (0<<7);
-    *(volatile unsigned short*)0x4000106 = (0<<7);
-    *(volatile unsigned short*)0x400010A = (0<<7);
-  }
-
+# 62 "timer.c"
   *(volatile unsigned short*)0x4000202 = *(volatile unsigned short*)0x4000202;
   *(unsigned short*)0x4000208 = 1;
 }

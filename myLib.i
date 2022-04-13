@@ -91,7 +91,9 @@ typedef volatile struct {
 
 
 extern DMA *dma;
-# 238 "myLib.h"
+# 276 "myLib.h"
+typedef void (*ihp_t)(void);
+# 300 "myLib.h"
 void DMANow(int channel, volatile const void *src, volatile void *dst, unsigned int cnt);
 
 

@@ -32,7 +32,6 @@ void drawUI();
 //Variables
 extern int vOff;
 extern int hOff;
-extern int hshift;
 extern int score;
 extern int lives;
 extern float gasLevel;

@@ -91,7 +91,9 @@ typedef volatile struct {
 
 
 extern DMA *dma;
-# 238 "myLib.h"
+# 276 "myLib.h"
+typedef void (*ihp_t)(void);
+# 300 "myLib.h"
 void DMANow(int channel, volatile const void *src, volatile void *dst, unsigned int cnt);
 
 
@@ -132,7 +134,6 @@ void drawUI();
 
 extern int vOff;
 extern int hOff;
-extern int hshift;
 extern int score;
 extern int lives;
 extern float gasLevel;
@@ -212,7 +213,6 @@ extern const unsigned short spritesheetTiles[16384];
 extern const unsigned short spritesheetPal[256];
 # 5 "game.c" 2
 
-int hshift;
 int vOff;
 int hOff;
 int score = 0;
@@ -243,24 +243,24 @@ void drawGame() {
 
     (*(volatile unsigned short *)0x04000010) = hOff;
 
-
     waitForVBlank();
     DMANow(3, shadowOAM, ((OBJ_ATTR *)(0x7000000)), 128*4);
 }
 
 void updateGame () {
     setFuelLevel(0);
+    updateObstacles();
     updatePlayer();
     for (int i = 0; i < 5; i++) {
   updateBullet(&bullets[i]);
  }
-    updateObstacles();
-
 }
 
 void initPlayer() {
     puffle.worldRow = 80;
     puffle.worldCol = 14;
+
+
     puffle.rdel = 1;
     puffle.cdel = 1;
     puffle.width = 14;
@@ -284,14 +284,13 @@ void drawPlayer() {
 }
 
 void updatePlayer() {
-    hshift = 0;
     if((~((*(volatile unsigned short *)0x04000130)) & ((1 << 5)))) {
         if (puffle.worldCol > 0) {
             puffle.worldCol -= puffle.cdel;
 
             if (hOff > 0 && (puffle.worldCol - hOff) < 240 / 2) {
                 hOff--;
-                hshift = -1;
+
             }
         }
 
@@ -302,7 +301,6 @@ void updatePlayer() {
 
             if (hOff < 512 - 240 && (puffle.worldCol + hOff) > 240 / 2) {
                 hOff++;
-                hshift = 1;
             }
         }
 
@@ -330,33 +328,13 @@ void updatePlayer() {
         fireBullet();
     }
 
-    for (int i = 0; i < 10; i++) {
-        if(!coins[i].collected && collision(puffle.worldCol % 240, puffle.worldRow % 160, puffle.width, puffle.height, coins[i].worldCol, coins[i].worldRow, coins[i].width, coins[i].height)) {
-            coins[i].collected = 1;
-            coins[i].active = 0;
-            score+=5;
-        }
-    }
-    for (int i = 0; i < 3; i++) {
-        if(!fuels[i].collected && collision(puffle.worldCol, puffle.worldRow, puffle.width, puffle.height, fuels[i].worldCol, fuels[i].worldRow, fuels[i].width, fuels[i].height)) {
-            fuels[i].collected = 1;
-            fuels[i].active = 0;
-            setFuelLevel(1);
-        }
-    }
-    for (int i = 0; i < 7; i++) {
-        if(!balloons[i].hit && collision(puffle.worldCol, puffle.worldRow, puffle.width, puffle.height, balloons[i].worldCol , balloons[i].worldRow, balloons[i].width, balloons[i].height)) {
-            balloons[i].hit = 1;
-            balloons[i].active = 0;
-            lives--;
-        }
-    }
+
 }
 
 void initBullet() {
     for (int i = 0; i < 5; i++) {
         bullets[i].worldRow = puffle.worldRow;
-        bullets[i].worldCol = puffle.worldCol - 10;
+        bullets[i].worldCol = puffle.worldCol;
         bullets[i].origCol = bullets[i].worldCol;
         bullets[i].cdel = 1;
         bullets[i].width = 8;
@@ -369,7 +347,7 @@ void fireBullet() {
     for(int i = 0; i < 5; i++) {
   if(!bullets[i].active) {
    bullets[i].worldRow = puffle.worldRow + (puffle.height / 2);
-   bullets[i].worldCol = puffle.worldCol+puffle.width;
+   bullets[i].worldCol = puffle.worldCol + puffle.width;
             bullets[i].origCol = bullets[i].worldCol;
    bullets[i].active = 1;
    break;
@@ -381,7 +359,7 @@ void drawBullet() {
     for(int in = 0; in < 5; in++) {
         if (bullets[in].active) {
             shadowOAM[in+21].attr0 = bullets[in].worldRow | (0 << 13) | (0 << 14);
-            shadowOAM[in+21].attr1 = bullets[in].worldCol | (0 << 14);
+            shadowOAM[in+21].attr1 = (bullets[in].worldCol-hOff) | (0 << 14);
             shadowOAM[in+21].attr2 = ((0) << 12) | ((2)*32 + (0));
         } else {
             shadowOAM[in+21].attr0 = (2 << 8);

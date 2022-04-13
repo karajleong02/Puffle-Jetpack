@@ -3,7 +3,6 @@
 #include "obstacles.h"
 #include "spritesheet.h"
 
-int hshift; //0: no shift, -1: shift left, 1: shift right
 int vOff;
 int hOff;
 int score = 0;
@@ -33,7 +32,6 @@ void drawGame() {
     drawBullet();
 
     REG_BG0HOFF = hOff;
-    //REG_BG0VOFF = vOff;
 
     waitForVBlank();
     DMANow(3, shadowOAM, OAM, 128*4);
@@ -41,17 +39,18 @@ void drawGame() {
 
 void updateGame () {
     setFuelLevel(0);
+    updateObstacles();
     updatePlayer();
     for (int i = 0; i < BULLETCOUNT; i++) {
 		updateBullet(&bullets[i]);
 	}
-    updateObstacles();
-    
 }
 
 void initPlayer() {
     puffle.worldRow = 80;
     puffle.worldCol = 14;
+    // puffle.row = puffle.worldRow;
+    // puffle.col = puffle.worldCol;
     puffle.rdel = 1;
     puffle.cdel = 1;
     puffle.width = 14;
@@ -75,14 +74,13 @@ void drawPlayer() {
 }
 
 void updatePlayer() {
-    hshift = 0;
     if(BUTTON_HELD(BUTTON_LEFT)) {
         if (puffle.worldCol > 0) {
             puffle.worldCol -= puffle.cdel;
 
             if (hOff > 0 && (puffle.worldCol  - hOff) < SCREENWIDTH / 2) {
                 hOff--;
-                hshift = -1;
+                
             }
         }
         
@@ -93,7 +91,6 @@ void updatePlayer() {
 
             if (hOff < MAPWIDTH - SCREENWIDTH && (puffle.worldCol + hOff) > SCREENWIDTH / 2) {
                 hOff++;
-                hshift = 1;
             }
         }
         
@@ -120,34 +117,14 @@ void updatePlayer() {
     if (BUTTON_PRESSED(BUTTON_A)) {
         fireBullet();
     }
-
-    for (int i = 0; i < COINCOUNT; i++) {
-        if(!coins[i].collected && collision(puffle.worldCol % 240, puffle.worldRow % 160, puffle.width, puffle.height, coins[i].worldCol, coins[i].worldRow, coins[i].width, coins[i].height)) {
-            coins[i].collected = 1;
-            coins[i].active = 0;
-            score+=5;
-        }
-    }
-    for (int i = 0; i < FUELCOUNT; i++) {
-        if(!fuels[i].collected && collision(puffle.worldCol, puffle.worldRow, puffle.width, puffle.height, fuels[i].worldCol, fuels[i].worldRow, fuels[i].width, fuels[i].height)) {
-            fuels[i].collected = 1;
-            fuels[i].active = 0;
-            setFuelLevel(1);
-        }
-    }
-    for (int i = 0; i < BALLOONCOUNT; i++) {
-        if(!balloons[i].hit && collision(puffle.worldCol, puffle.worldRow, puffle.width, puffle.height, balloons[i].worldCol , balloons[i].worldRow, balloons[i].width, balloons[i].height)) {
-            balloons[i].hit = 1;
-            balloons[i].active = 0;
-            lives--;
-        }
-    }
+    
+    
 }
 
 void initBullet() {
     for (int i = 0; i < BULLETCOUNT; i++) {
         bullets[i].worldRow = puffle.worldRow;
-        bullets[i].worldCol = puffle.worldCol - 10;
+        bullets[i].worldCol = puffle.worldCol;
         bullets[i].origCol = bullets[i].worldCol;
         bullets[i].cdel = 1;
         bullets[i].width = 8;
@@ -160,7 +137,7 @@ void fireBullet() {
     for(int i = 0; i < BULLETCOUNT; i++) {
 		if(!bullets[i].active) {
 			bullets[i].worldRow = puffle.worldRow + (puffle.height / 2); 
-			bullets[i].worldCol = puffle.worldCol+puffle.width;
+			bullets[i].worldCol = puffle.worldCol + puffle.width;
             bullets[i].origCol = bullets[i].worldCol;
 			bullets[i].active = 1;
 			break;
@@ -172,7 +149,7 @@ void drawBullet() {
     for(int in = 0; in < BULLETCOUNT; in++) {
         if (bullets[in].active) {
             shadowOAM[in+21].attr0 = bullets[in].worldRow | ATTR0_4BPP | ATTR0_SQUARE;
-            shadowOAM[in+21].attr1 = bullets[in].worldCol | ATTR1_TINY;
+            shadowOAM[in+21].attr1 = (bullets[in].worldCol-hOff) | ATTR1_TINY;
             shadowOAM[in+21].attr2 = ATTR2_PALROW(0) | ATTR2_TILEID(0, 2);  
         } else {
             shadowOAM[in+21].attr0 = ATTR0_HIDE;

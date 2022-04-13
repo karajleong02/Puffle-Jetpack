@@ -91,7 +91,9 @@ typedef volatile struct {
 
 
 extern DMA *dma;
-# 238 "myLib.h"
+# 276 "myLib.h"
+typedef void (*ihp_t)(void);
+# 300 "myLib.h"
 void DMANow(int channel, volatile const void *src, volatile void *dst, unsigned int cnt);
 
 
@@ -132,7 +134,6 @@ void drawUI();
 
 extern int vOff;
 extern int hOff;
-extern int hshift;
 extern int score;
 extern int lives;
 extern float gasLevel;
@@ -260,24 +261,15 @@ void initBalloons() {
 
 void updateBalloons() {
     for (int i = 0; i < 7; i++) {
-        if (!balloons[i].hit) {
-            if (hshift == -1) {
-                balloons[i].worldCol++;
-            }
-            if (hshift == 1) {
-                balloons[i].worldCol--;
-            }
-
-            if(balloons[i].worldCol < 0) {
-                balloons[i].active = 0;
-
-            } else {
-                balloons[i].active = 1;
-            }
+        if(balloons[i].active && collision(puffle.worldCol, puffle.worldRow, puffle.width, puffle.height, balloons[i].worldCol, balloons[i].worldRow, balloons[i].width, balloons[i].height)) {
+            balloons[i].hit = 1;
+            balloons[i].active = 0;
+            lives--;
+        }
+        if(balloons[i].active && balloons[i].worldCol - hOff < 0) {
+            balloons[i].active = 0;
         }
     }
-
-
 }
 
 void drawBalloons() {
@@ -286,7 +278,7 @@ void drawBalloons() {
             shadowOAM[i+1].attr0 |= (2 << 8);
         } else {
             shadowOAM[i+1].attr0 = balloons[i].worldRow | (0 << 13) | (0 << 14);
-            shadowOAM[i+1].attr1 = (balloons[i].worldCol) | (1 << 14);
+            shadowOAM[i+1].attr1 = (balloons[i].worldCol - hOff) | (1 << 14);
             shadowOAM[i+1].attr2 = ((0) << 12) | ((0)*32 + (5));
         }
     }
@@ -308,19 +300,13 @@ void initFuel() {
 
 void updateFuel() {
     for (int i = 0; i < 3; i++) {
-        if(!fuels[i].collected) {
-            if (hshift == -1) {
-            fuels[i].worldCol++;
-            }
-            if (hshift == 1) {
-                fuels[i].worldCol--;
-            }
-            if(fuels[i].worldCol < 0) {
-                fuels[i].active = 0;
-
-            } else {
-                fuels[i].active = 1;
-            }
+        if(!fuels[i].collected && collision(puffle.worldCol, puffle.worldRow, puffle.width, puffle.height, fuels[i].worldCol, fuels[i].worldRow, fuels[i].width, fuels[i].height)) {
+            fuels[i].collected = 1;
+            fuels[i].active = 0;
+            setFuelLevel(1);
+        }
+        if(fuels[i].active && fuels[i].worldCol - hOff < 0) {
+            fuels[i].active = 0;
         }
     }
 }
@@ -331,7 +317,7 @@ void drawFuel() {
             shadowOAM[i+8].attr0 |= (2 << 8);
         } else {
             shadowOAM[i+8].attr0 = fuels[i].worldRow | (0 << 13) | (0 << 14);
-            shadowOAM[i+8].attr1 = (fuels[i].worldCol) | (1 << 14);
+            shadowOAM[i+8].attr1 = (fuels[i].worldCol-hOff) | (1 << 14);
             shadowOAM[i+8].attr2 = ((0) << 12) | ((0)*32 + (2));
         }
     }
@@ -353,19 +339,13 @@ void initCoin() {
 
 void updateCoin() {
     for (int i = 0; i < 10; i++) {
-        if (!coins[i].collected) {
-            if (hshift == -1) {
-            coins[i].worldCol++;
-            }
-            if (hshift == 1) {
-                coins[i].worldCol--;
-            }
-            if(coins[i].worldCol < 0) {
-                coins[i].active = 0;
-
-            } else {
-                coins[i].active = 1;
-            }
+        if(!coins[i].collected && collision(puffle.worldCol % 240, puffle.worldRow % 160, puffle.width, puffle.height, coins[i].worldCol, coins[i].worldRow, coins[i].width, coins[i].height)) {
+            coins[i].collected = 1;
+            coins[i].active = 0;
+            score+=5;
+        }
+        if(coins[i].active && coins[i].worldCol - hOff < 0) {
+            coins[i].active = 0;
         }
     }
 }
@@ -376,7 +356,7 @@ void drawCoin() {
             shadowOAM[i+11].attr0 |= (2 << 8);
         } else {
             shadowOAM[i+11].attr0 = coins[i].worldRow | (0 << 13) | (2 << 14);
-            shadowOAM[i+11].attr1 = (coins[i].worldCol) | (0 << 14);
+            shadowOAM[i+11].attr1 = (coins[i].worldCol - hOff) | (0 << 14);
             shadowOAM[i+11].attr2 = ((0) << 12) | ((0)*32 + (4));
         }
     }
