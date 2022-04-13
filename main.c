@@ -4,14 +4,16 @@
 // There is also a way for the player to win and lose. They win by crossing the line at the end of the background. The
 // player will lose either when fuel reaches 0, or they run out of lives. The score also increments by 5 everytime the player
 // collides with a coin. The player can also shoot bullets at the balloons by hitting A, and when they collide the balloons 
-// disappear. Use the arrow keys to move the player
+// disappear. Use the arrow keys to move the player.
 
 // I have not finished the progress tracker at the bottom of the screen, since I haven't decided how to implement this yet.
 // This would most likely not use a timer, so I have to implement a timer as well for the gas levels to get it to decrement
 // at certain time intervals. I focused on the game this milestone, and didn't implement keeping track of and displaying the 
 // high scores at the end and beginning of the screen. There are no animations yet, so the balloon also doesn't float.
 
-//There is one bug where I'm having trouble with the collisions of the obstacles once the screen shifts
+// There is one bug where I'm having trouble with the collisions of the obstacles once the screen shifts. The timer is not 
+// completely accurate and I want to change the time, but have trouble figuring out the correct interval. But this bug does
+// not negatively affect the gameplay.
 
 #include <stdlib.h>
 #include <stdio.h>
