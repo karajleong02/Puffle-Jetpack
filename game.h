@@ -1,6 +1,6 @@
 //Constants
 #define BULLETCOUNT 5
-#define MAPHEIGHT 256
+#define MAPHEIGHT 160
 #define MAPWIDTH 512
 
 //Struct for Bullet
@@ -16,24 +16,25 @@ typedef struct {
 
 //Prototypes
 void initGame();
+void updateGame();
 void drawGame();
 void initPlayer();
 void drawPlayer();
 void updatePlayer();
 void initBullet();
 void fireBullet();
-void drawBullet(BULLET *);
+void drawBullet();
 void updateBullet(BULLET *);
-void drawWords();
+void setFuelLevel(int);
+void drawUI();
+
 
 //Variables
 extern int vOff;
 extern int hOff;
-//MAKE SHIFT 1 VARIABLE?
 extern int hshift;
-extern int vshift;
 extern int score;
 extern int lives;
-extern int gasLevel;
+extern float gasLevel;
 extern SPRITE puffle;
 BULLET bullets[BULLETCOUNT];

@@ -7,6 +7,7 @@
 typedef struct {
     int worldRow;
     int worldCol;
+    int shift;
     int rdel;
     int width;
     int height;
@@ -23,19 +24,23 @@ typedef struct {
 typedef struct {
     int worldRow;
     int worldCol;
+    int shift;
     int width;
     int height;
     int active;
+    int collected;
 } FUEL;
 
 //Struct for Coin
 typedef struct {
     int worldRow;
     int worldCol;
+    int shift;
     int width;
     int height;
     int active;
     int value;
+    int collected;
 } COIN;
 
 //Prototypes

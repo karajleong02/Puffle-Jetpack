@@ -116,25 +116,26 @@ typedef struct {
 
 
 void initGame();
+void updateGame();
 void drawGame();
 void initPlayer();
 void drawPlayer();
 void updatePlayer();
 void initBullet();
 void fireBullet();
-void drawBullet(BULLET *);
+void drawBullet();
 void updateBullet(BULLET *);
-void drawWords();
+void setFuelLevel(int);
+void drawUI();
+
 
 
 extern int vOff;
 extern int hOff;
-
 extern int hshift;
-extern int vshift;
 extern int score;
 extern int lives;
-extern int gasLevel;
+extern float gasLevel;
 extern SPRITE puffle;
 BULLET bullets[5];
 # 3 "obstacles.c" 2
@@ -148,6 +149,7 @@ BULLET bullets[5];
 typedef struct {
     int worldRow;
     int worldCol;
+    int shift;
     int rdel;
     int width;
     int height;
@@ -164,19 +166,23 @@ typedef struct {
 typedef struct {
     int worldRow;
     int worldCol;
+    int shift;
     int width;
     int height;
     int active;
+    int collected;
 } FUEL;
 
 
 typedef struct {
     int worldRow;
     int worldCol;
+    int shift;
     int width;
     int height;
     int active;
     int value;
+    int collected;
 } COIN;
 
 
@@ -234,10 +240,11 @@ void updateObstacles() {
 void initBalloons() {
     int number = 1;
     for (int i = 0; i < 7; i++) {
-        balloons[i].worldCol = i * 60 + 45;
-        balloons[i].worldRow = number * 30 + 75;
+        balloons[i].worldCol = i * 57 + 42;
+        balloons[i].worldRow = rand() % 124 + 12;
+        balloons[i].shift = 0;
         balloons[i].rdel = 2;
-        balloons[i].width = 16;
+        balloons[i].width = 14;
         balloons[i].height = 16;
         balloons[i].aniCounter = 0;
         balloons[i].aniState = UP;
@@ -253,26 +260,22 @@ void initBalloons() {
 
 void updateBalloons() {
     for (int i = 0; i < 7; i++) {
-        if (hshift == 1) {
-            balloons[i].worldCol++;
-        }
-        if (hshift == 2) {
-            balloons[i].worldCol--;
-        }
-        if (vshift == 1) {
-            balloons[i].worldRow++;
-        }
+        if (!balloons[i].hit) {
+            if (hshift == -1) {
+                balloons[i].worldCol++;
+            }
+            if (hshift == 1) {
+                balloons[i].worldCol--;
+            }
 
-        if (vshift == 2) {
-                balloons[i].worldRow--;
-        }
-        for (int i = 0; i < 5; i++) {
-            if (bullets[i].active & collision(balloons[i].worldCol, balloons[i].worldRow, balloons[i].width, balloons[i].height, bullets[i].worldCol, bullets[i].worldRow, bullets[i].width, bullets[i].height))
-                bullets[i].active = 0;
+            if(balloons[i].worldCol < 0) {
                 balloons[i].active = 0;
-                balloons[i].hit = 1;
+
+            } else {
+                balloons[i].active = 1;
             }
         }
+    }
 
 
 }
@@ -282,8 +285,8 @@ void drawBalloons() {
         if (!balloons[i].active) {
             shadowOAM[i+1].attr0 |= (2 << 8);
         } else {
-            shadowOAM[i+1].attr0 = (balloons[i].worldRow & 0xFF) | (0 << 13) | (0 << 14);
-            shadowOAM[i+1].attr1 = (balloons[i].worldCol & 0x1FF) | (1 << 14);
+            shadowOAM[i+1].attr0 = balloons[i].worldRow | (0 << 13) | (0 << 14);
+            shadowOAM[i+1].attr1 = (balloons[i].worldCol) | (1 << 14);
             shadowOAM[i+1].attr2 = ((0) << 12) | ((0)*32 + (5));
         }
     }
@@ -292,28 +295,32 @@ void drawBalloons() {
 void initFuel() {
     int number = -1;
     for (int i = 0; i < 3; i++) {
-        fuels[i].worldCol = i * 115 + 100;
-        fuels[i].worldRow = number * 30 + 75;
-        fuels[i].width = 16;
-        fuels[i].height = 16;
+        fuels[i].worldCol = i * 140 + 97;
+        fuels[i].worldRow = rand() % 124 + 12;
+        fuels[i].shift = 0;
+        fuels[i].width = 12;
+        fuels[i].height = 14;
         fuels[i].active = 1;
+        fuels[i].collected = 0;
         number *= -1;
     }
 }
 
 void updateFuel() {
     for (int i = 0; i < 3; i++) {
-        if (hshift == 1) {
+        if(!fuels[i].collected) {
+            if (hshift == -1) {
             fuels[i].worldCol++;
-        }
-        if (hshift == 2) {
-            fuels[i].worldCol--;
-        }
-        if (vshift == 1) {
-            fuels[i].worldRow++;
-        }
-        if (vshift == 2) {
-            fuels[i].worldRow--;
+            }
+            if (hshift == 1) {
+                fuels[i].worldCol--;
+            }
+            if(fuels[i].worldCol < 0) {
+                fuels[i].active = 0;
+
+            } else {
+                fuels[i].active = 1;
+            }
         }
     }
 }
@@ -324,7 +331,7 @@ void drawFuel() {
             shadowOAM[i+8].attr0 |= (2 << 8);
         } else {
             shadowOAM[i+8].attr0 = fuels[i].worldRow | (0 << 13) | (0 << 14);
-            shadowOAM[i+8].attr1 = fuels[i].worldCol | (1 << 14);
+            shadowOAM[i+8].attr1 = (fuels[i].worldCol) | (1 << 14);
             shadowOAM[i+8].attr2 = ((0) << 12) | ((0)*32 + (2));
         }
     }
@@ -333,28 +340,32 @@ void drawFuel() {
 void initCoin() {
     int number = -1;
     for (int i = 0; i < 10; i++) {
-        coins[i].worldCol = i * 50 + 70;
-        coins[i].worldRow = number * 30 + 75;
-        coins[i].width = 16;
-        coins[i].height = 16;
+        coins[i].worldCol = i * 42 + 70;
+        coins[i].worldRow = rand() % 124 + 12;
+        coins[i].shift = 0;
+        coins[i].width = 6;
+        coins[i].height = 14;
         coins[i].active = 1;
+        coins[i].collected = 0;
         number *= -1;
     }
 }
 
 void updateCoin() {
     for (int i = 0; i < 10; i++) {
-        if (hshift == 1) {
+        if (!coins[i].collected) {
+            if (hshift == -1) {
             coins[i].worldCol++;
-        }
-        if (hshift == 2) {
-            coins[i].worldCol--;
-        }
-        if (vshift == 1) {
-            coins[i].worldRow++;
-        }
-        if (vshift == 2) {
-            coins[i].worldRow--;
+            }
+            if (hshift == 1) {
+                coins[i].worldCol--;
+            }
+            if(coins[i].worldCol < 0) {
+                coins[i].active = 0;
+
+            } else {
+                coins[i].active = 1;
+            }
         }
     }
 }
@@ -365,7 +376,7 @@ void drawCoin() {
             shadowOAM[i+11].attr0 |= (2 << 8);
         } else {
             shadowOAM[i+11].attr0 = coins[i].worldRow | (0 << 13) | (2 << 14);
-            shadowOAM[i+11].attr1 = coins[i].worldCol | (0 << 14);
+            shadowOAM[i+11].attr1 = (coins[i].worldCol) | (0 << 14);
             shadowOAM[i+11].attr2 = ((0) << 12) | ((0)*32 + (4));
         }
     }

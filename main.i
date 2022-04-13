@@ -2,6 +2,7 @@
 # 1 "<built-in>"
 # 1 "<command-line>"
 # 1 "main.c"
+# 14 "main.c"
 # 1 "/opt/devkitpro/devkitARM/arm-none-eabi/include/stdlib.h" 1 3
 # 10 "/opt/devkitpro/devkitARM/arm-none-eabi/include/stdlib.h" 3
 # 1 "/opt/devkitpro/devkitARM/arm-none-eabi/include/machine/ieeefp.h" 1 3
@@ -810,7 +811,7 @@ extern long double _strtold_r (struct _reent *, const char *restrict, char **res
 extern long double strtold (const char *restrict, char **restrict);
 # 336 "/opt/devkitpro/devkitARM/arm-none-eabi/include/stdlib.h" 3
 
-# 2 "main.c" 2
+# 15 "main.c" 2
 # 1 "/opt/devkitpro/devkitARM/arm-none-eabi/include/stdio.h" 1 3
 # 36 "/opt/devkitpro/devkitARM/arm-none-eabi/include/stdio.h" 3
 # 1 "/opt/devkitpro/devkitARM/lib/gcc/arm-none-eabi/9.1.0/include/stddef.h" 1 3 4
@@ -1221,7 +1222,7 @@ _putchar_unlocked(int _c)
 }
 # 797 "/opt/devkitpro/devkitARM/arm-none-eabi/include/stdio.h" 3
 
-# 3 "main.c" 2
+# 16 "main.c" 2
 # 1 "myLib.h" 1
 
 
@@ -1318,7 +1319,7 @@ void DMANow(int channel, volatile const void *src, volatile void *dst, unsigned 
 
 
 int collision(int colA, int rowA, int widthA, int heightA, int colB, int rowB, int widthB, int heightB);
-# 4 "main.c" 2
+# 17 "main.c" 2
 # 1 "splashScreen.h" 1
 # 22 "splashScreen.h"
 extern const unsigned short splashScreenTiles[5168];
@@ -1328,7 +1329,7 @@ extern const unsigned short splashScreenMap[1024];
 
 
 extern const unsigned short splashScreenPal[256];
-# 5 "main.c" 2
+# 18 "main.c" 2
 # 1 "pauseScreen.h" 1
 # 22 "pauseScreen.h"
 extern const unsigned short pauseScreenTiles[3504];
@@ -1338,7 +1339,7 @@ extern const unsigned short pauseScreenMap[1024];
 
 
 extern const unsigned short pauseScreenPal[256];
-# 6 "main.c" 2
+# 19 "main.c" 2
 # 1 "winScreen.h" 1
 # 22 "winScreen.h"
 extern const unsigned short winScreenTiles[2720];
@@ -1348,7 +1349,7 @@ extern const unsigned short winScreenMap[1024];
 
 
 extern const unsigned short winScreenPal[256];
-# 7 "main.c" 2
+# 20 "main.c" 2
 # 1 "loseScreen.h" 1
 # 22 "loseScreen.h"
 extern const unsigned short loseScreenTiles[3072];
@@ -1358,7 +1359,7 @@ extern const unsigned short loseScreenMap[1024];
 
 
 extern const unsigned short loseScreenPal[256];
-# 8 "main.c" 2
+# 21 "main.c" 2
 # 1 "instructionScreen.h" 1
 # 22 "instructionScreen.h"
 extern const unsigned short instructionScreenTiles[3664];
@@ -1368,7 +1369,7 @@ extern const unsigned short instructionScreenMap[1024];
 
 
 extern const unsigned short instructionScreenPal[256];
-# 9 "main.c" 2
+# 22 "main.c" 2
 # 1 "gameScreen.h" 1
 # 22 "gameScreen.h"
 extern const unsigned short gameScreenTiles[9216];
@@ -1378,14 +1379,14 @@ extern const unsigned short gameScreenMap[2048];
 
 
 extern const unsigned short gameScreenPal[256];
-# 10 "main.c" 2
+# 23 "main.c" 2
 # 1 "spritesheet.h" 1
 # 21 "spritesheet.h"
 extern const unsigned short spritesheetTiles[16384];
 
 
 extern const unsigned short spritesheetPal[256];
-# 11 "main.c" 2
+# 24 "main.c" 2
 # 1 "game.h" 1
 
 
@@ -1396,6 +1397,7 @@ extern const unsigned short spritesheetPal[256];
 typedef struct {
     int worldRow;
     int worldCol;
+    int origCol;
     int cdel;
     int width;
     int height;
@@ -1404,25 +1406,29 @@ typedef struct {
 
 
 void initGame();
+void updateGame();
 void drawGame();
 void initPlayer();
 void drawPlayer();
 void updatePlayer();
 void initBullet();
 void fireBullet();
-void drawBullet(BULLET *);
+void drawBullet();
 void updateBullet(BULLET *);
-void drawWords();
+void setFuelLevel(int);
+void drawUI();
+
 
 
 extern int vOff;
 extern int hOff;
+extern int hshift;
 extern int score;
 extern int lives;
-extern int gasLevel;
+extern float gasLevel;
 extern SPRITE puffle;
 BULLET bullets[5];
-# 12 "main.c" 2
+# 25 "main.c" 2
 # 1 "obstacles.h" 1
 
 
@@ -1433,6 +1439,7 @@ BULLET bullets[5];
 typedef struct {
     int worldRow;
     int worldCol;
+    int shift;
     int rdel;
     int width;
     int height;
@@ -1449,37 +1456,54 @@ typedef struct {
 typedef struct {
     int worldRow;
     int worldCol;
+    int shift;
     int width;
     int height;
     int active;
+    int collected;
 } FUEL;
 
 
 typedef struct {
     int worldRow;
     int worldCol;
+    int shift;
     int width;
     int height;
     int active;
     int value;
+    int collected;
 } COIN;
 
 
 void initObstacles();
 void drawObstacles();
+void updateObstacles();
 void initBalloons();
 void updateBalloons();
 void drawBalloons();
 void initFuel();
 void drawFuel();
+void updateFuel();
 void initCoin();
 void drawCoin();
+void updateCoin();
 
 
 BALLOON balloons[7];
 FUEL fuels[3];
 COIN coins[10];
-# 13 "main.c" 2
+# 26 "main.c" 2
+# 1 "background.h" 1
+# 22 "background.h"
+extern const unsigned short backgroundTiles[2944];
+
+
+extern const unsigned short backgroundMap[2048];
+
+
+extern const unsigned short backgroundPal[256];
+# 27 "main.c" 2
 
 
 void initialize();
@@ -1487,6 +1511,8 @@ void initialize();
 
 void goToStart();
 void start();
+void goToInstructions();
+void instructions();
 void goToGame();
 void game();
 void goToPause();
@@ -1513,6 +1539,8 @@ unsigned short oldButtons;
 
 
 OBJ_ATTR shadowOAM[128];
+
+int seed;
 
 int main() {
     initialize();
@@ -1581,6 +1609,7 @@ void goToSplash() {
     (*(volatile unsigned short *)0x04000012) = 0;
 
     state = SPLASH;
+    seed = 0;
 
     (*(volatile unsigned short *)0x4000000) = 0 | (1 << 8);
 }
@@ -1588,11 +1617,13 @@ void goToSplash() {
 
 void splash() {
     hideSprites();
+    seed++;
 
     if ((!(~(oldButtons) & ((1 << 0))) && (~buttons & ((1 << 0))))) {
         goToInstructions();
     }
     if ((!(~(oldButtons) & ((1 << 1))) && (~buttons & ((1 << 1))))) {
+        srand(seed);
         initGame();
         goToGame();
     }
@@ -1628,6 +1659,8 @@ void instructions() {
         goToSplash();
     }
     if ((!(~(oldButtons) & ((1 << 3))) && (~buttons & ((1 << 3))))) {
+        srand(seed);
+        initGame();
         goToGame();
     }
 }
@@ -1637,15 +1670,14 @@ void goToGame() {
     waitForVBlank();
 
     (*(volatile unsigned short *)0x4000000) = 0 | (1 << 8) | (1 << 12);
-    (*(volatile unsigned short *)0x4000008) = (0 << 7) | (0 << 14) | ((0) << 2) | ((30) << 8);
+    (*(volatile unsigned short *)0x4000008) = (0 << 7) | (1 << 14) | ((0) << 2) | ((30) << 8);
 
 
-    (*(volatile unsigned short *)0x4000008) |= (1 << 14);
 
 
-    DMANow(3, gameScreenPal, ((unsigned short *)0x5000000), 256);
-    DMANow(3, gameScreenTiles, &((charblock *)0x6000000)[0], 18432/2);
-    DMANow(3, gameScreenMap, &((screenblock *)0x6000000)[30], 4096/2);
+    DMANow(3, backgroundPal, ((unsigned short *)0x5000000), 256);
+    DMANow(3, backgroundTiles, &((charblock *)0x6000000)[0], 5888/2);
+    DMANow(3, backgroundMap, &((screenblock *)0x6000000)[30], 4096/2);
 
 
 
@@ -1665,10 +1697,10 @@ void game() {
     if ((!(~(oldButtons) & ((1 << 1))) && (~buttons & ((1 << 1))))) {
         goToPause();
     }
-    if ((!(~(oldButtons) & ((1 << 2))) && (~buttons & ((1 << 2))))) {
+    if (puffle.worldCol >= 475) {
         goToWin();
     }
-    if ((!(~(oldButtons) & ((1 << 3))) && (~buttons & ((1 << 3))))) {
+    if (lives <= 0 || gasLevel <= 0) {
         goToLose();
     }
 }

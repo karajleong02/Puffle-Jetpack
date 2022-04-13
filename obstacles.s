@@ -21,106 +21,54 @@ initBalloons:
 	@ Function supports interworking.
 	@ args = 0, pretend = 0, frame = 0
 	@ frame_needed = 0, uses_anonymous_args = 0
-	mov	r0, #1
-	push	{r4, r5, r6, lr}
-	mov	ip, #45
-	mov	r6, r0
-	mov	r5, #2
-	mov	lr, #16
-	mov	r2, #0
-	ldr	r3, .L6
-	ldr	r4, .L6+4
+	push	{r4, r5, r6, r7, r8, r9, r10, lr}
+	mov	r9, #42
+	mov	r5, #0
+	ldr	r4, .L6
+	ldr	r8, .L6+4
+	ldr	r7, .L6+8
+	ldr	r6, .L6+12
 .L2:
-	rsb	r1, r0, r0, lsl #4
-	str	ip, [r3, #4]
-	lsl	r1, r1, #1
-	add	ip, ip, #60
-	add	r1, r1, #75
-	cmp	ip, r4
-	str	r5, [r3, #8]
-	str	lr, [r3, #12]
-	str	lr, [r3, #16]
-	str	r2, [r3, #20]
-	str	r2, [r3, #24]
-	str	r2, [r3, #28]
-	str	r2, [r3, #32]
-	str	r2, [r3, #36]
-	str	r2, [r3, #40]
-	str	r6, [r3, #44]
-	str	r1, [r3]
-	rsb	r0, r0, #0
-	add	r3, r3, #48
+	str	r9, [r4, #4]
+	mov	lr, pc
+	bx	r8
+	mov	lr, #2
+	mov	ip, #14
+	mov	r1, #16
+	mov	r2, #1
+	smull	r3, r10, r7, r0
+	asr	r3, r0, #31
+	add	r10, r10, r0
+	rsb	r3, r3, r10, asr #6
+	rsb	r3, r3, r3, lsl #5
+	add	r9, r9, #57
+	sub	r0, r0, r3, lsl lr
+	add	r0, r0, #12
+	cmp	r9, r6
+	str	r5, [r4, #8]
+	str	r5, [r4, #24]
+	str	r5, [r4, #28]
+	str	r5, [r4, #32]
+	str	r5, [r4, #36]
+	str	r5, [r4, #40]
+	str	r5, [r4, #44]
+	str	r0, [r4]
+	str	lr, [r4, #12]
+	str	ip, [r4, #16]
+	str	r1, [r4, #20]
+	str	r2, [r4, #48]
+	add	r4, r4, #52
 	bne	.L2
-	pop	{r4, r5, r6, lr}
+	pop	{r4, r5, r6, r7, r8, r9, r10, lr}
 	bx	lr
 .L7:
 	.align	2
 .L6:
 	.word	balloons
-	.word	465
+	.word	rand
+	.word	-2078209981
+	.word	441
 	.size	initBalloons, .-initBalloons
-	.align	2
-	.global	initObstacles
-	.syntax unified
-	.arm
-	.fpu softvfp
-	.type	initObstacles, %function
-initObstacles:
-	@ Function supports interworking.
-	@ args = 0, pretend = 0, frame = 0
-	@ frame_needed = 0, uses_anonymous_args = 0
-	push	{r4, lr}
-	bl	initBalloons
-	mov	r4, #1
-	mov	r0, #100
-	mvn	r1, #0
-	mov	ip, #16
-	ldr	r3, .L14
-	ldr	lr, .L14+4
-.L9:
-	rsb	r2, r1, r1, lsl #4
-	str	r0, [r3, #4]
-	lsl	r2, r2, #1
-	add	r0, r0, #115
-	add	r2, r2, #75
-	cmp	r0, lr
-	str	ip, [r3, #8]
-	str	ip, [r3, #12]
-	str	r4, [r3, #16]
-	str	r2, [r3]
-	rsb	r1, r1, #0
-	add	r3, r3, #20
-	bne	.L9
-	mov	r0, #70
-	mvn	r1, #0
-	mov	ip, #16
-	mov	r4, #1
-	ldr	r3, .L14+8
-	ldr	lr, .L14+12
-.L10:
-	rsb	r2, r1, r1, lsl #4
-	str	r0, [r3, #4]
-	lsl	r2, r2, #1
-	add	r0, r0, #50
-	add	r2, r2, #75
-	cmp	r0, lr
-	str	ip, [r3, #8]
-	str	ip, [r3, #12]
-	str	r4, [r3, #16]
-	str	r2, [r3]
-	rsb	r1, r1, #0
-	add	r3, r3, #24
-	bne	.L10
-	pop	{r4, lr}
-	bx	lr
-.L15:
-	.align	2
-.L14:
-	.word	fuels
-	.word	445
-	.word	coins
-	.word	570
-	.size	initObstacles, .-initObstacles
 	.align	2
 	.global	updateBalloons
 	.syntax unified
@@ -131,84 +79,41 @@ updateBalloons:
 	@ Function supports interworking.
 	@ args = 0, pretend = 0, frame = 0
 	@ frame_needed = 0, uses_anonymous_args = 0
-	push	{r4, r5, r6, r7, r8, r9, r10, fp, lr}
-	mov	r7, #0
-	mov	fp, #1
-	ldr	r8, .L32
-	ldr	r10, .L32+4
-	sub	sp, sp, #20
-	add	r9, r8, #240
-.L23:
-	ldr	r3, .L32+8
-	ldr	r3, [r3]
-	cmp	r3, #1
-	beq	.L30
-	cmp	r3, #2
-	ldreq	r3, [r8, #4]
-	subeq	r3, r3, #1
-	streq	r3, [r8, #4]
-.L18:
-	ldr	r3, .L32+12
-	ldr	r3, [r3]
-	cmp	r3, #1
-	beq	.L31
-	cmp	r3, #2
-	ldreq	r3, [r8]
-	subeq	r3, r3, #1
-	streq	r3, [r8]
-.L21:
-	ldr	r5, .L32+16
-	ldr	r4, .L32
-.L20:
-	ldm	r5, {r2, r3}
-	ldr	r0, [r5, #20]
-	ldr	r1, [r5, #16]
-	str	r0, [sp, #12]
-	str	r1, [sp, #8]
-	str	r2, [sp, #4]
-	str	r3, [sp]
-	add	r2, r4, #12
-	ldr	r1, [r4]
-	ldr	r0, [r4, #4]
-	ldm	r2, {r2, r3}
-	ldr	r6, [r5, #24]
-	mov	lr, pc
-	bx	r10
-	add	r4, r4, #48
-	tst	r6, r0
-	strne	r7, [r5, #24]
-	str	r7, [r4, #-4]
-	str	fp, [r4, #-8]
-	cmp	r4, r9
-	add	r5, r5, #28
-	bne	.L20
-	ldr	r3, .L32+20
-	add	r8, r8, #48
-	cmp	r8, r3
-	bne	.L23
-	add	sp, sp, #20
-	@ sp needed
-	pop	{r4, r5, r6, r7, r8, r9, r10, fp, lr}
+	str	lr, [sp, #-4]!
+	mov	ip, #0
+	mov	lr, #1
+	ldr	r2, .L16
+	ldr	r3, .L16+4
+	ldr	r0, [r2]
+	add	r1, r3, #364
+.L13:
+	ldr	r2, [r3, #44]
+	cmp	r2, #0
+	bne	.L9
+	ldr	r2, [r3, #4]
+	cmn	r0, #1
+	addeq	r2, r2, #1
+	streq	r2, [r3, #4]
+	beq	.L11
+	cmp	r0, #1
+	subeq	r2, r2, #1
+	streq	r2, [r3, #4]
+.L11:
+	cmp	r2, #0
+	movge	r2, lr
+	movlt	r2, ip
+	str	r2, [r3, #48]
+.L9:
+	add	r3, r3, #52
+	cmp	r3, r1
+	bne	.L13
+	ldr	lr, [sp], #4
 	bx	lr
-.L31:
-	ldr	r3, [r8]
-	add	r3, r3, #1
-	str	r3, [r8]
-	b	.L21
-.L30:
-	ldr	r3, [r8, #4]
-	add	r3, r3, #1
-	str	r3, [r8, #4]
-	b	.L18
-.L33:
+.L17:
 	.align	2
-.L32:
-	.word	balloons
-	.word	collision
+.L16:
 	.word	hshift
-	.word	vshift
-	.word	bullets
-	.word	balloons+336
+	.word	balloons
 	.size	updateBalloons, .-updateBalloons
 	.align	2
 	.global	drawBalloons
@@ -220,37 +125,34 @@ drawBalloons:
 	@ Function supports interworking.
 	@ args = 0, pretend = 0, frame = 0
 	@ frame_needed = 0, uses_anonymous_args = 0
-	push	{r4, lr}
-	mov	r4, #5
-	ldr	r3, .L40
-	ldr	r2, .L40+4
-	ldr	lr, .L40+8
-	add	r0, r3, #336
-.L37:
-	ldr	r1, [r3, #44]
+	str	lr, [sp, #-4]!
+	mov	lr, #5
+	ldr	r3, .L24
+	ldr	r2, .L24+4
+	add	r0, r3, #364
+.L21:
+	ldr	r1, [r3, #48]
 	cmp	r1, #0
-	ldrne	r1, [r3, #4]
 	ldrheq	r1, [r2, #8]
-	ldrbne	ip, [r3]	@ zero_extendqisi2
-	andne	r1, r1, lr
+	ldrne	r1, [r3, #4]
+	ldrne	ip, [r3]
 	orreq	r1, r1, #512
 	orrne	r1, r1, #16384
-	add	r3, r3, #48
+	add	r3, r3, #52
 	strheq	r1, [r2, #8]	@ movhi
-	strhne	r4, [r2, #12]	@ movhi
+	strhne	lr, [r2, #12]	@ movhi
 	strhne	r1, [r2, #10]	@ movhi
 	strhne	ip, [r2, #8]	@ movhi
 	cmp	r3, r0
 	add	r2, r2, #8
-	bne	.L37
-	pop	{r4, lr}
+	bne	.L21
+	ldr	lr, [sp], #4
 	bx	lr
-.L41:
+.L25:
 	.align	2
-.L40:
+.L24:
 	.word	balloons
 	.word	shadowOAM
-	.word	511
 	.size	drawBalloons, .-drawBalloons
 	.align	2
 	.global	initFuel
@@ -262,34 +164,46 @@ initFuel:
 	@ Function supports interworking.
 	@ args = 0, pretend = 0, frame = 0
 	@ frame_needed = 0, uses_anonymous_args = 0
-	push	{r4, lr}
-	mov	r0, #100
-	mvn	r1, #0
-	mov	ip, #16
-	mov	r4, #1
-	ldr	r3, .L46
-	ldr	lr, .L46+4
-.L43:
-	rsb	r2, r1, r1, lsl #4
-	str	r0, [r3, #4]
-	lsl	r2, r2, #1
-	add	r0, r0, #115
-	add	r2, r2, #75
-	cmp	r0, lr
-	str	ip, [r3, #8]
-	str	ip, [r3, #12]
-	str	r4, [r3, #16]
-	str	r2, [r3]
-	rsb	r1, r1, #0
-	add	r3, r3, #20
-	bne	.L43
-	pop	{r4, lr}
+	push	{r4, r5, r6, r7, r8, r9, r10, lr}
+	mov	r8, #97
+	mov	r9, #0
+	ldr	r4, .L30
+	ldr	r7, .L30+4
+	ldr	r6, .L30+8
+	ldr	r5, .L30+12
+.L27:
+	str	r8, [r4, #4]
+	mov	lr, pc
+	bx	r7
+	mov	ip, #12
+	mov	r1, #14
+	mov	r2, #1
+	smull	r3, lr, r6, r0
+	asr	r3, r0, #31
+	add	lr, lr, r0
+	rsb	r3, r3, lr, asr #6
+	rsb	r3, r3, r3, lsl #5
+	add	r8, r8, #140
+	sub	r0, r0, r3, lsl #2
+	add	r0, r0, ip
+	cmp	r8, r5
+	str	r9, [r4, #8]
+	str	r9, [r4, #24]
+	str	r0, [r4]
+	str	ip, [r4, #12]
+	str	r1, [r4, #16]
+	str	r2, [r4, #20]
+	add	r4, r4, #28
+	bne	.L27
+	pop	{r4, r5, r6, r7, r8, r9, r10, lr}
 	bx	lr
-.L47:
+.L31:
 	.align	2
-.L46:
+.L30:
 	.word	fuels
-	.word	445
+	.word	rand
+	.word	-2078209981
+	.word	517
 	.size	initFuel, .-initFuel
 	.align	2
 	.global	updateFuel
@@ -301,49 +215,40 @@ updateFuel:
 	@ Function supports interworking.
 	@ args = 0, pretend = 0, frame = 0
 	@ frame_needed = 0, uses_anonymous_args = 0
-	@ link register save eliminated.
-	ldr	r1, .L58
-	ldr	r1, [r1]
-	ldr	r2, .L58+4
-	ldr	r3, .L58+8
-	cmp	r1, #1
-	ldr	r2, [r2]
-	add	ip, r3, #60
-	beq	.L56
-.L49:
-	cmp	r1, #2
-	ldreq	r0, [r3, #4]
-	subeq	r0, r0, #1
-	streq	r0, [r3, #4]
-	cmp	r2, #1
-	beq	.L57
-.L51:
-	cmp	r2, #2
-	ldreq	r0, [r3]
-	subeq	r0, r0, #1
-	streq	r0, [r3]
-.L52:
-	add	r3, r3, #20
-	cmp	r3, ip
-	bxeq	lr
-	cmp	r1, #1
-	bne	.L49
-.L56:
-	ldr	r0, [r3, #4]
-	cmp	r2, #1
-	add	r0, r0, #1
-	str	r0, [r3, #4]
-	bne	.L51
-.L57:
-	ldr	r0, [r3]
-	add	r0, r0, #1
-	str	r0, [r3]
-	b	.L52
-.L59:
+	str	lr, [sp, #-4]!
+	mov	ip, #0
+	mov	lr, #1
+	ldr	r2, .L40
+	ldr	r3, .L40+4
+	ldr	r0, [r2]
+	add	r1, r3, #84
+.L37:
+	ldr	r2, [r3, #24]
+	cmp	r2, #0
+	bne	.L33
+	ldr	r2, [r3, #4]
+	cmn	r0, #1
+	addeq	r2, r2, #1
+	streq	r2, [r3, #4]
+	beq	.L35
+	cmp	r0, #1
+	subeq	r2, r2, #1
+	streq	r2, [r3, #4]
+.L35:
+	cmp	r2, #0
+	movge	r2, lr
+	movlt	r2, ip
+	str	r2, [r3, #20]
+.L33:
+	add	r3, r3, #28
+	cmp	r3, r1
+	bne	.L37
+	ldr	lr, [sp], #4
+	bx	lr
+.L41:
 	.align	2
-.L58:
+.L40:
 	.word	hshift
-	.word	vshift
 	.word	fuels
 	.size	updateFuel, .-updateFuel
 	.align	2
@@ -358,11 +263,11 @@ drawFuel:
 	@ frame_needed = 0, uses_anonymous_args = 0
 	str	lr, [sp, #-4]!
 	mov	lr, #2
-	ldr	r3, .L66
-	ldr	r2, .L66+4
+	ldr	r3, .L48
+	ldr	r2, .L48+4
 	add	r0, r3, #24
-.L63:
-	ldr	r1, [r2, #16]
+.L45:
+	ldr	r1, [r2, #20]
 	cmp	r1, #0
 	ldrheq	r1, [r3, #64]
 	ldrne	r1, [r2, #4]
@@ -375,13 +280,13 @@ drawFuel:
 	strhne	ip, [r3, #64]	@ movhi
 	add	r3, r3, #8
 	cmp	r3, r0
-	add	r2, r2, #20
-	bne	.L63
+	add	r2, r2, #28
+	bne	.L45
 	ldr	lr, [sp], #4
 	bx	lr
-.L67:
+.L49:
 	.align	2
-.L66:
+.L48:
 	.word	shadowOAM
 	.word	fuels
 	.size	drawFuel, .-drawFuel
@@ -395,35 +300,63 @@ initCoin:
 	@ Function supports interworking.
 	@ args = 0, pretend = 0, frame = 0
 	@ frame_needed = 0, uses_anonymous_args = 0
-	push	{r4, lr}
-	mov	r0, #70
-	mvn	r1, #0
-	mov	ip, #16
-	mov	r4, #1
-	ldr	r3, .L72
-	ldr	lr, .L72+4
-.L69:
-	rsb	r2, r1, r1, lsl #4
-	str	r0, [r3, #4]
-	lsl	r2, r2, #1
-	add	r0, r0, #50
-	add	r2, r2, #75
-	cmp	r0, lr
-	str	ip, [r3, #8]
-	str	ip, [r3, #12]
-	str	r4, [r3, #16]
-	str	r2, [r3]
-	rsb	r1, r1, #0
-	add	r3, r3, #24
-	bne	.L69
-	pop	{r4, lr}
+	push	{r4, r5, r6, r7, r8, r9, r10, lr}
+	mov	r8, #70
+	mov	r9, #0
+	ldr	r4, .L54
+	ldr	r7, .L54+4
+	ldr	r6, .L54+8
+	ldr	r5, .L54+12
+.L51:
+	str	r8, [r4, #4]
+	mov	lr, pc
+	bx	r7
+	mov	ip, #6
+	mov	r1, #14
+	mov	r2, #1
+	smull	r3, lr, r6, r0
+	asr	r3, r0, #31
+	add	lr, lr, r0
+	rsb	r3, r3, lr, asr ip
+	rsb	r3, r3, r3, lsl #5
+	add	r8, r8, #42
+	sub	r0, r0, r3, lsl #2
+	add	r0, r0, #12
+	cmp	r8, r5
+	str	r9, [r4, #8]
+	str	r9, [r4, #28]
+	str	r0, [r4]
+	str	ip, [r4, #12]
+	str	r1, [r4, #16]
+	str	r2, [r4, #20]
+	add	r4, r4, #32
+	bne	.L51
+	pop	{r4, r5, r6, r7, r8, r9, r10, lr}
 	bx	lr
-.L73:
+.L55:
 	.align	2
-.L72:
+.L54:
 	.word	coins
-	.word	570
+	.word	rand
+	.word	-2078209981
+	.word	490
 	.size	initCoin, .-initCoin
+	.align	2
+	.global	initObstacles
+	.syntax unified
+	.arm
+	.fpu softvfp
+	.type	initObstacles, %function
+initObstacles:
+	@ Function supports interworking.
+	@ args = 0, pretend = 0, frame = 0
+	@ frame_needed = 0, uses_anonymous_args = 0
+	push	{r4, lr}
+	bl	initBalloons
+	bl	initFuel
+	pop	{r4, lr}
+	b	initCoin
+	.size	initObstacles, .-initObstacles
 	.align	2
 	.global	updateCoin
 	.syntax unified
@@ -434,48 +367,40 @@ updateCoin:
 	@ Function supports interworking.
 	@ args = 0, pretend = 0, frame = 0
 	@ frame_needed = 0, uses_anonymous_args = 0
-	@ link register save eliminated.
-	ldr	r1, .L83
-	ldr	r2, .L83+4
-	ldr	r3, .L83+8
-	ldr	r1, [r1]
-	ldr	r2, [r2]
-	add	ip, r3, #240
-	b	.L79
-.L75:
-	cmp	r1, #2
-	ldreq	r0, [r3, #4]
-	subeq	r0, r0, #1
-	streq	r0, [r3, #4]
-	cmp	r2, #1
-	beq	.L82
-.L77:
-	cmp	r2, #2
-	ldreq	r0, [r3]
-	subeq	r0, r0, #1
-	streq	r0, [r3]
-.L78:
-	add	r3, r3, #24
-	cmp	r3, ip
-	bxeq	lr
-.L79:
-	cmp	r1, #1
-	bne	.L75
-	ldr	r0, [r3, #4]
-	cmp	r2, #1
-	add	r0, r0, #1
-	str	r0, [r3, #4]
-	bne	.L77
-.L82:
-	ldr	r0, [r3]
-	add	r0, r0, #1
-	str	r0, [r3]
-	b	.L78
-.L84:
+	str	lr, [sp, #-4]!
+	mov	ip, #0
+	mov	lr, #1
+	ldr	r2, .L66
+	ldr	r3, .L66+4
+	ldr	r0, [r2]
+	add	r1, r3, #320
+.L63:
+	ldr	r2, [r3, #28]
+	cmp	r2, #0
+	bne	.L59
+	ldr	r2, [r3, #4]
+	cmn	r0, #1
+	addeq	r2, r2, #1
+	streq	r2, [r3, #4]
+	beq	.L61
+	cmp	r0, #1
+	subeq	r2, r2, #1
+	streq	r2, [r3, #4]
+.L61:
+	cmp	r2, #0
+	movge	r2, lr
+	movlt	r2, ip
+	str	r2, [r3, #20]
+.L59:
+	add	r3, r3, #32
+	cmp	r3, r1
+	bne	.L63
+	ldr	lr, [sp], #4
+	bx	lr
+.L67:
 	.align	2
-.L83:
+.L66:
 	.word	hshift
-	.word	vshift
 	.word	coins
 	.size	updateCoin, .-updateCoin
 	.align	2
@@ -506,12 +431,12 @@ drawCoin:
 	@ frame_needed = 0, uses_anonymous_args = 0
 	push	{r4, lr}
 	mov	r4, #4
-	ldr	r3, .L93
-	ldr	r2, .L93+4
-	ldr	lr, .L93+8
+	ldr	r3, .L76
+	ldr	r2, .L76+4
+	ldr	lr, .L76+8
 	add	r0, r3, #80
-.L90:
-	ldr	r1, [r2, #16]
+.L73:
+	ldr	r1, [r2, #20]
 	cmp	r1, #0
 	ldmne	r2, {r1, ip}
 	ldrheq	r1, [r3, #88]
@@ -523,13 +448,13 @@ drawCoin:
 	strhne	ip, [r3, #90]	@ movhi
 	add	r3, r3, #8
 	cmp	r3, r0
-	add	r2, r2, #24
-	bne	.L90
+	add	r2, r2, #32
+	bne	.L73
 	pop	{r4, lr}
 	bx	lr
-.L94:
+.L77:
 	.align	2
-.L93:
+.L76:
 	.word	shadowOAM
 	.word	coins
 	.word	-32768
@@ -550,8 +475,8 @@ drawObstacles:
 	pop	{r4, lr}
 	b	drawFuel
 	.size	drawObstacles, .-drawObstacles
-	.comm	coins,240,4
-	.comm	fuels,60,4
-	.comm	balloons,336,4
+	.comm	coins,320,4
+	.comm	fuels,84,4
+	.comm	balloons,364,4
 	.comm	bullets,140,4
 	.ident	"GCC: (devkitARM release 53) 9.1.0"
