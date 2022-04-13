@@ -21,11 +21,11 @@
 #include "winScreen.h"
 #include "loseScreen.h"
 #include "instructionScreen.h"
-#include "gameScreen.h"
 #include "spritesheet.h"
 #include "game.h"
 #include "obstacles.h"
 #include "background.h"
+#include "timer.h"
 
 // Prototypes
 void initialize();
@@ -105,6 +105,8 @@ void initialize() {
 
     buttons = BUTTONS;
     oldButtons = 0;
+
+    setupInterrupts();
 
     goToSplash();
 }
