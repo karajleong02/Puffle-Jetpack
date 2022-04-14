@@ -9,11 +9,10 @@
 // I have not finished the progress tracker at the bottom of the screen, since I haven't decided how to implement this yet.
 // This would most likely not use a timer, so I have to implement a timer as well for the gas levels to get it to decrement
 // at certain time intervals. I focused on the game this milestone, and didn't implement keeping track of and displaying the 
-// high scores at the end and beginning of the screen. There are no animations yet, so the balloon also doesn't float.
+// high scores at the end and beginning of the screen. There are no animations yet, so the balloon also doesn't "float".
 
 // One bug I have is that the sprites don't erase correctly or quickly enough when they go off the screen.
-//The timer is not completely accurate and I want to change the time, but have trouble figuring out the correct interval. 
-// But these bugs does not negatively affect the gameplay.
+// But this bugs does not negatively affect the gameplay.
 
 #include <stdlib.h>
 #include <stdio.h>

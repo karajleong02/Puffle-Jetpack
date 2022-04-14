@@ -54,6 +54,7 @@ void updateBalloons() {
         if(balloons[i].active && collision(puffle.worldCol, puffle.worldRow, puffle.width, puffle.height, balloons[i].worldCol, balloons[i].worldRow, balloons[i].width, balloons[i].height)) {
             balloons[i].hit = 1;
             balloons[i].active = 0;
+            shadowOAM[i+1].attr0 |= ATTR0_HIDE;
             lives--;
         }
         if(balloons[i].active && balloons[i].worldCol - hOff < 0) {
@@ -93,6 +94,7 @@ void updateFuel() {
         if(!fuels[i].collected && collision(puffle.worldCol, puffle.worldRow, puffle.width, puffle.height, fuels[i].worldCol, fuels[i].worldRow, fuels[i].width, fuels[i].height)) {
             fuels[i].collected = 1;
             fuels[i].active = 0;
+            shadowOAM[i+8].attr0 |= ATTR0_HIDE;
             setFuelLevel(1);
         }
         if(fuels[i].active && fuels[i].worldCol - hOff < 0) {
@@ -129,9 +131,10 @@ void initCoin() {
 
 void updateCoin() {
     for (int i = 0; i < COINCOUNT; i++) {
-        if(!coins[i].collected && collision(puffle.worldCol % 240, puffle.worldRow % 160, puffle.width, puffle.height, coins[i].worldCol, coins[i].worldRow, coins[i].width, coins[i].height)) {
+        if(!coins[i].collected && collision(puffle.worldCol, puffle.worldRow, puffle.width, puffle.height, coins[i].worldCol, coins[i].worldRow, coins[i].width, coins[i].height)) {
             coins[i].collected = 1;
             coins[i].active = 0;
+            shadowOAM[i+11].attr0 |= ATTR0_HIDE;
             score+=5;
         }
         if(coins[i].active && coins[i].worldCol - hOff < 0) {
