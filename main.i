@@ -1374,7 +1374,7 @@ extern const unsigned short loseScreenPal[256];
 # 25 "main.c" 2
 # 1 "instructionScreen.h" 1
 # 22 "instructionScreen.h"
-extern const unsigned short instructionScreenTiles[3664];
+extern const unsigned short instructionScreenTiles[5216];
 
 
 extern const unsigned short instructionScreenMap[1024];
@@ -1382,13 +1382,23 @@ extern const unsigned short instructionScreenMap[1024];
 
 extern const unsigned short instructionScreenPal[256];
 # 26 "main.c" 2
+# 1 "instructionScreen2.h" 1
+# 22 "instructionScreen2.h"
+extern const unsigned short instructionScreen2Tiles[3584];
+
+
+extern const unsigned short instructionScreen2Map[1024];
+
+
+extern const unsigned short instructionScreen2Pal[256];
+# 27 "main.c" 2
 # 1 "spritesheet.h" 1
 # 21 "spritesheet.h"
 extern const unsigned short spritesheetTiles[16384];
 
 
 extern const unsigned short spritesheetPal[256];
-# 27 "main.c" 2
+# 28 "main.c" 2
 # 1 "game.h" 1
 
 
@@ -1429,7 +1439,7 @@ extern int lives;
 extern float gasLevel;
 extern SPRITE puffle;
 BULLET bullets[5];
-# 28 "main.c" 2
+# 29 "main.c" 2
 # 1 "obstacles.h" 1
 
 
@@ -1492,7 +1502,7 @@ void updateCoin();
 BALLOON balloons[7];
 FUEL fuels[3];
 COIN coins[10];
-# 29 "main.c" 2
+# 30 "main.c" 2
 # 1 "background.h" 1
 # 22 "background.h"
 extern const unsigned short backgroundTiles[3200];
@@ -1502,13 +1512,13 @@ extern const unsigned short backgroundMap[3072];
 
 
 extern const unsigned short backgroundPal[256];
-# 30 "main.c" 2
+# 31 "main.c" 2
 # 1 "timer.h" 1
 
 void interruptHandler();
 void enableTimerInterrupts();
 void setupInterrupts();
-# 31 "main.c" 2
+# 32 "main.c" 2
 # 1 "sound.h" 1
 void setupSounds();
 void playSoundA(const signed char* sound, int length, int loops);
@@ -1534,7 +1544,7 @@ typedef struct{
 
 SOUND soundA;
 SOUND soundB;
-# 32 "main.c" 2
+# 33 "main.c" 2
 
 # 1 "backgroundSound.h" 1
 
@@ -1542,28 +1552,28 @@ SOUND soundB;
 extern const unsigned int backgroundSound_sampleRate;
 extern const unsigned int backgroundSound_length;
 extern const signed char backgroundSound_data[];
-# 34 "main.c" 2
+# 35 "main.c" 2
 # 1 "coinCollect.h" 1
 
 
 extern const unsigned int coinCollect_sampleRate;
 extern const unsigned int coinCollect_length;
 extern const signed char coinCollect_data[];
-# 35 "main.c" 2
+# 36 "main.c" 2
 # 1 "fuelCollect.h" 1
 
 
 extern const unsigned int fuelCollect_sampleRate;
 extern const unsigned int fuelCollect_length;
 extern const signed char fuelCollect_data[];
-# 36 "main.c" 2
+# 37 "main.c" 2
 # 1 "balloonPop.h" 1
 
 
 extern const unsigned int balloonPop_sampleRate;
 extern const unsigned int balloonPop_length;
 extern const signed char balloonPop_data[];
-# 37 "main.c" 2
+# 38 "main.c" 2
 
 
 void initialize();
@@ -1687,6 +1697,7 @@ void splash() {
     }
     if ((!(~(oldButtons) & ((1 << 1))) && (~buttons & ((1 << 1))))) {
         srand(seed);
+        playSoundA(backgroundSound_data, backgroundSound_length, 1);
         initGame();
         goToGame();
     }
@@ -1700,7 +1711,7 @@ void goToInstructions() {
     (*(volatile unsigned short *)0x4000008) = (0 << 14) | ((31) << 8);
 
 
-    DMANow(3, instructionScreenTiles, &((charblock *)0x6000000)[0], 7328/2);
+    DMANow(3, instructionScreenTiles, &((charblock *)0x6000000)[0], 10432/2);
     DMANow(3, instructionScreenMap, &((screenblock *)0x6000000)[31], 2048/2);
 
     (*(volatile unsigned short *)0x04000010) = 0;
@@ -1718,11 +1729,16 @@ void goToInstructions() {
 
 
 void instructions() {
+    if ((!(~(oldButtons) & ((1 << 0))) && (~buttons & ((1 << 0))))) {
+        DMANow(3, instructionScreen2Tiles, &((charblock *)0x6000000)[0], 7168/2);
+        DMANow(3, instructionScreen2Map, &((screenblock *)0x6000000)[31], 2048/2);
+    }
     if ((!(~(oldButtons) & ((1 << 1))) && (~buttons & ((1 << 1))))) {
         goToSplash();
     }
     if ((!(~(oldButtons) & ((1 << 3))) && (~buttons & ((1 << 3))))) {
         srand(seed);
+        playSoundA(backgroundSound_data, backgroundSound_length, 1);
         initGame();
         goToGame();
     }
@@ -1730,7 +1746,7 @@ void instructions() {
 
 
 void goToGame() {
-    playSoundA(backgroundSound_data, backgroundSound_length, 1);
+
     waitForVBlank();
 
     DMANow(3, spritesheetTiles, &((charblock *)0x6000000)[4], 32768 / 2);

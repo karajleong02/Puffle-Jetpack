@@ -23,6 +23,7 @@
 #include "winScreen.h"
 #include "loseScreen.h"
 #include "instructionScreen.h"
+#include "instructionScreen2.h"
 #include "spritesheet.h"
 #include "game.h"
 #include "obstacles.h"
@@ -157,6 +158,7 @@ void splash() {
     }
     if (BUTTON_PRESSED(BUTTON_B)) {
         srand(seed);
+        playSoundA(backgroundSound_data, backgroundSound_length, 1);
         initGame();
         goToGame();
     }
@@ -188,11 +190,16 @@ void goToInstructions() {
 
 //Runs every frame of the instruction state.
 void instructions() {
+    if (BUTTON_PRESSED(BUTTON_A)) {
+        DMANow(3, instructionScreen2Tiles, &CHARBLOCK[0], instructionScreen2TilesLen/2);
+        DMANow(3, instructionScreen2Map, &SCREENBLOCK[31], instructionScreen2MapLen/2);
+    }
     if (BUTTON_PRESSED(BUTTON_B)) {
         goToSplash();
     }
     if (BUTTON_PRESSED(BUTTON_START)) {
         srand(seed);
+        playSoundA(backgroundSound_data, backgroundSound_length, 1);
         initGame();
         goToGame();
     }
@@ -200,7 +207,7 @@ void instructions() {
 
 // Sets up the game state.
 void goToGame() {
-    playSoundA(backgroundSound_data, backgroundSound_length, 1);
+    
     waitForVBlank();
     
     DMANow(3, spritesheetTiles, &CHARBLOCK[4], spritesheetTilesLen / 2);
