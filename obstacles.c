@@ -3,6 +3,12 @@
 #include "obstacles.h"
 #include "spritesheet.h"
 
+#include "sound.h"
+#include "coinCollect.h"
+#include "fuelCollect.h"
+#include "balloonPop.h"
+
+
 //Variables
 BALLOON balloons[BALLOONCOUNT];
 FUEL fuels[FUELCOUNT];
@@ -35,13 +41,11 @@ void initBalloons() {
         balloons[i].worldRow = rand() % 124 + 12;
         balloons[i].shift = 0;
         balloons[i].rdel = 2;
-        balloons[i].width = 14;
-        balloons[i].height = 16;
+        balloons[i].width = 13;
+        balloons[i].height = 32;
         balloons[i].aniCounter = 0;
-        balloons[i].aniState = UP;
-        balloons[i].prevAniState = 0;
-        balloons[i].currFrame = 0;
-        balloons[i].numFrames = 0;
+        balloons[i].currFrame = rand() % 5;
+        balloons[i].numFrames = 5;
         balloons[i].hit = 0;
         balloons[i].active = 1;
         number*= -1;
@@ -51,14 +55,25 @@ void initBalloons() {
 //Check if bullet shot it
 void updateBalloons() {
     for (int i = 0; i < BALLOONCOUNT; i++) {
-        if(balloons[i].active && collision(puffle.worldCol, puffle.worldRow, puffle.width, puffle.height, balloons[i].worldCol, balloons[i].worldRow, balloons[i].width, balloons[i].height)) {
-            balloons[i].hit = 1;
-            balloons[i].active = 0;
-            shadowOAM[i+1].attr0 |= ATTR0_HIDE;
-            lives--;
-        }
-        if(balloons[i].active && balloons[i].worldCol - hOff < 0) {
-            balloons[i].active = 0;
+        if(balloons[i].active) {
+            if( collision(puffle.worldCol, puffle.worldRow, puffle.width, puffle.height, balloons[i].worldCol, balloons[i].worldRow, balloons[i].width, balloons[i].height)) {
+                balloons[i].hit = 1;
+                balloons[i].active = 0;
+                shadowOAM[i+1].attr0 |= ATTR0_HIDE;
+                playSoundB(balloonPop_data, balloonPop_length, 0);
+                lives--;
+            }
+            if( balloons[i].worldCol - hOff < 0) {
+                balloons[i].active = 0;
+            }
+            if (balloons[i].aniCounter < 50) {
+                if (balloons[i].aniCounter % 25 == 0) {
+                    balloons[i].currFrame = (balloons[i].currFrame + 1) % balloons[i].numFrames;
+                }
+                balloons[i].aniCounter++;
+            } else {
+                balloons[i].aniCounter = 0;
+            }
         }
     } 
 }
@@ -68,9 +83,9 @@ void drawBalloons() {
         if (!balloons[i].active) {
             shadowOAM[i+1].attr0 |= ATTR0_HIDE;
         } else {
-            shadowOAM[i+1].attr0 = balloons[i].worldRow | ATTR0_4BPP | ATTR0_SQUARE;
-            shadowOAM[i+1].attr1 = (balloons[i].worldCol - hOff) | ATTR1_SMALL;
-            shadowOAM[i+1].attr2 = ATTR2_PALROW(0) | ATTR2_TILEID(5, 0);
+            shadowOAM[i+1].attr0 = (balloons[i].worldRow & ROWMASK) | ATTR0_4BPP | ATTR0_TALL;
+            shadowOAM[i+1].attr1 = ((balloons[i].worldCol - hOff) & COLMASK) | ATTR1_MEDIUM;
+            shadowOAM[i+1].attr2 = ATTR2_PALROW(0) | ATTR2_TILEID(4, 2 + 4 * balloons[i].currFrame);
         }
     }
 }
@@ -81,8 +96,8 @@ void initFuel() {
         fuels[i].worldCol = i * 140 + 97;
         fuels[i].worldRow = rand() % 124 + 12;
         fuels[i].shift = 0;
-        fuels[i].width = 12;
-        fuels[i].height = 14;
+        fuels[i].width = 10;
+        fuels[i].height = 15;
         fuels[i].active = 1;
         fuels[i].collected = 0;
         number *= -1;
@@ -95,6 +110,7 @@ void updateFuel() {
             fuels[i].collected = 1;
             fuels[i].active = 0;
             shadowOAM[i+8].attr0 |= ATTR0_HIDE;
+            playSoundB(fuelCollect_data, fuelCollect_length, 0);
             setFuelLevel(1);
         }
         if(fuels[i].active && fuels[i].worldCol - hOff < 0) {
@@ -108,9 +124,9 @@ void drawFuel() {
         if (!fuels[i].active) {
             shadowOAM[i+8].attr0 |= ATTR0_HIDE;
         } else {
-            shadowOAM[i+8].attr0 = fuels[i].worldRow | ATTR0_4BPP | ATTR0_SQUARE;
-            shadowOAM[i+8].attr1 = (fuels[i].worldCol-hOff) | ATTR1_SMALL;
-            shadowOAM[i+8].attr2 = ATTR2_PALROW(0) | ATTR2_TILEID(2, 0);
+            shadowOAM[i+8].attr0 = (fuels[i].worldRow & ROWMASK) | ATTR0_4BPP | ATTR0_SQUARE;
+            shadowOAM[i+8].attr1 = ((fuels[i].worldCol-hOff) & COLMASK) | ATTR1_SMALL;
+            shadowOAM[i+8].attr2 = ATTR2_PALROW(0) | ATTR2_TILEID(2, 2);
         }
     }
 }
@@ -122,7 +138,7 @@ void initCoin() {
         coins[i].worldRow = rand() % 124 + 12;
         coins[i].shift = 0;
         coins[i].width = 6;
-        coins[i].height = 14;
+        coins[i].height = 13;
         coins[i].active = 1;
         coins[i].collected = 0;
         number *= -1;
@@ -135,6 +151,7 @@ void updateCoin() {
             coins[i].collected = 1;
             coins[i].active = 0;
             shadowOAM[i+11].attr0 |= ATTR0_HIDE;
+            playSoundB(coinCollect_data, coinCollect_length, 0);
             score+=5;
         }
         if(coins[i].active && coins[i].worldCol - hOff < 0) {
@@ -148,9 +165,9 @@ void drawCoin() {
         if (!coins[i].active) {
             shadowOAM[i+11].attr0 |= ATTR0_HIDE;
         } else {
-            shadowOAM[i+11].attr0 = coins[i].worldRow | ATTR0_4BPP | ATTR0_TALL;
-            shadowOAM[i+11].attr1 = (coins[i].worldCol - hOff) | ATTR1_TINY;
-            shadowOAM[i+11].attr2 = ATTR2_PALROW(0) | ATTR2_TILEID(4, 0);
+            shadowOAM[i+11].attr0 = (coins[i].worldRow & ROWMASK) | ATTR0_4BPP | ATTR0_SQUARE;
+            shadowOAM[i+11].attr1 = ((coins[i].worldCol - hOff) & COLMASK) | ATTR1_SMALL;
+            shadowOAM[i+11].attr2 = ATTR2_PALROW(0) | ATTR2_TILEID(0, 2);
         }
     }
 }

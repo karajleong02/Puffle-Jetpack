@@ -155,8 +155,6 @@ typedef struct {
     int width;
     int height;
     int aniCounter;
-    int aniState;
-    int prevAniState;
     int currFrame;
     int numFrames;
     int hit;
@@ -222,7 +220,8 @@ SPRITE puffle;
 BULLET bullets[5];
 
 
-enum {PUFFLELEFT, PUFFLERIGHT};
+enum {PUFFLERIGHT, PUFFLELEFT};
+
 
 void initGame() {
     initObstacles();
@@ -263,13 +262,13 @@ void initPlayer() {
 
     puffle.rdel = 1;
     puffle.cdel = 1;
-    puffle.width = 14;
-    puffle.height = 14;
+    puffle.width = 24;
+    puffle.height = 32;
     puffle.aniCounter = 0;
-    puffle.aniState = PUFFLELEFT;
+    puffle.aniState = PUFFLERIGHT;
     puffle.prevAniState = 0;
     puffle.curFrame = 0;
-    puffle.numFrames = 0;
+    puffle.numFrames = 3;
     puffle.hide = 0;
 }
 
@@ -278,8 +277,8 @@ void drawPlayer() {
         shadowOAM[0].attr0 |= (2 << 8);
     } else {
         shadowOAM[0].attr0 = ((puffle.worldRow - vOff) & 0xFF) | (0 << 13) | (0 << 14);
-        shadowOAM[0].attr1 = ((puffle.worldCol - hOff) & 0x1FF) | (1 << 14);
-        shadowOAM[0].attr2 = ((0) << 12) | ((0)*32 + (0));
+        shadowOAM[0].attr1 = ((puffle.worldCol - hOff) & 0x1FF) | (2 << 14);
+        shadowOAM[0].attr2 = ((0) << 12) | ((2 + 4 * puffle.curFrame)*32 + (7 + 4 * puffle.aniState));
     }
 }
 
@@ -287,7 +286,7 @@ void updatePlayer() {
     if((~((*(volatile unsigned short *)0x04000130)) & ((1 << 5)))) {
         if (puffle.worldCol > 0) {
             puffle.worldCol -= puffle.cdel;
-
+            puffle.aniState = PUFFLELEFT;
             if (hOff > 0 && (puffle.worldCol - hOff) < 240 / 2) {
                 hOff--;
 
@@ -296,10 +295,10 @@ void updatePlayer() {
 
     }
     if((~((*(volatile unsigned short *)0x04000130)) & ((1 << 4)))) {
-        if (puffle.worldCol + puffle.width < 512) {
+        if (puffle.worldCol + puffle.width < 560) {
             puffle.worldCol += puffle.cdel;
-
-            if (hOff < 512 - 240 && (puffle.worldCol + hOff) > 240 / 2) {
+            puffle.aniState = PUFFLERIGHT;
+            if (hOff < 560 - 240 && (puffle.worldCol + hOff) > 240 / 2) {
                 hOff++;
             }
         }
@@ -316,7 +315,7 @@ void updatePlayer() {
 
     }
     if((~((*(volatile unsigned short *)0x04000130)) & ((1 << 7)))) {
-        if (puffle.worldRow + puffle.height < 160) {
+        if ((puffle.worldRow + puffle.height) < 160) {
             puffle.worldRow += puffle.rdel;
 
             if (vOff < 160 - 160 && (puffle.worldRow + vOff) > 160 / 2) {
@@ -327,7 +326,14 @@ void updatePlayer() {
     if ((!(~(oldButtons) & ((1 << 0))) && (~buttons & ((1 << 0))))) {
         fireBullet();
     }
-
+    if (puffle.aniCounter < 30) {
+        if (puffle.aniCounter % 10 == 0) {
+            puffle.curFrame = (puffle.curFrame + 1) % puffle.numFrames;
+        }
+        puffle.aniCounter++;
+    } else {
+        puffle.aniCounter = 0;
+    }
 
 }
 
@@ -337,8 +343,8 @@ void initBullet() {
         bullets[i].worldCol = puffle.worldCol;
         bullets[i].origCol = bullets[i].worldCol;
         bullets[i].cdel = 1;
-        bullets[i].width = 8;
-        bullets[i].height = 2;
+        bullets[i].width = 7;
+        bullets[i].height = 3;
         bullets[i].active = 0;
     }
 }
@@ -358,9 +364,9 @@ void fireBullet() {
 void drawBullet() {
     for(int in = 0; in < 5; in++) {
         if (bullets[in].active) {
-            shadowOAM[in+21].attr0 = bullets[in].worldRow | (0 << 13) | (0 << 14);
+            shadowOAM[in+21].attr0 = bullets[in].worldRow | (0 << 13) | (1 << 14);
             shadowOAM[in+21].attr1 = (bullets[in].worldCol-hOff) | (0 << 14);
-            shadowOAM[in+21].attr2 = ((0) << 12) | ((2)*32 + (0));
+            shadowOAM[in+21].attr2 = ((0) << 12) | ((4)*32 + (0));
         } else {
             shadowOAM[in+21].attr0 = (2 << 8);
         }
@@ -369,7 +375,7 @@ void drawBullet() {
 
 void updateBullet(BULLET *b) {
     if (b->active) {
-  if (b->worldCol + b->width <= 512 || b->worldCol - b-> origCol < 240) {
+  if (b->worldCol + b->width <= 560 || b->worldCol - b-> origCol < 240) {
    b->worldCol += b->cdel;
   } else {
    b->active = 0;
@@ -407,44 +413,44 @@ void drawUI() {
 
     shadowOAM[26].attr0 = 0 | (0 << 13) | (1 << 14);
     shadowOAM[26].attr1 = 0 | (2 << 14);
-    shadowOAM[26].attr2 = ((0) << 12) | ((0)*32 + (7));
+    shadowOAM[26].attr2 = ((0) << 12) | ((12)*32 + (0));
 
 
-    shadowOAM[27].attr0 = 0 | (0 << 13) | (1 << 14);
-    shadowOAM[27].attr1 = 33 | (2 << 14);
+    shadowOAM[27].attr0 = 3 | (0 << 13) | (1 << 14);
+    shadowOAM[27].attr1 = 25 | (1 << 14);
 
     if (gasLevel > 75) {
-         shadowOAM[27].attr2 = ((0) << 12) | ((0)*32 + (11));
+         shadowOAM[27].attr2 = ((0) << 12) | ((8)*32 + (0));
     } else if (gasLevel > 50) {
-         shadowOAM[27].attr2 = ((0) << 12) | ((2)*32 + (11));
+         shadowOAM[27].attr2 = ((0) << 12) | ((9)*32 + (0));
     } else if (gasLevel > 25) {
-         shadowOAM[27].attr2 = ((0) << 12) | ((4)*32 + (11));
+         shadowOAM[27].attr2 = ((0) << 12) | ((10)*32 + (0));
     } else {
-         shadowOAM[27].attr2 = ((0) << 12) | ((6)*32 + (11));
+         shadowOAM[27].attr2 = ((0) << 12) | ((11)*32 + (0));
     }
 
 
     shadowOAM[28].attr0 = 0 | (0 << 13) | (1 << 14);
-    shadowOAM[28].attr1 = 208 | (2 << 14);
+    shadowOAM[28].attr1 = 208 | (1 << 14);
 
     if (lives == 3) {
-        shadowOAM[28].attr2 = ((0) << 12) | ((0)*32 + (15));
+        shadowOAM[28].attr2 = ((0) << 12) | ((5)*32 + (0));
     } else if (lives == 2) {
-        shadowOAM[28].attr2 = ((0) << 12) | ((2)*32 + (15));
+        shadowOAM[28].attr2 = ((0) << 12) | ((6)*32 + (0));
     } else if (lives == 1) {
-        shadowOAM[28].attr2 = ((0) << 12) | ((4)*32 + (15));
+        shadowOAM[28].attr2 = ((0) << 12) | ((7)*32 + (0));
     }
 
 
     shadowOAM[29].attr0 = 0 | (0 << 13) | (1 << 14);
     shadowOAM[29].attr1 = 65 | (2 << 14);
-    shadowOAM[29].attr2 = ((0) << 12) | ((2)*32 + (7));
+    shadowOAM[29].attr2 = ((0) << 12) | ((14)*32 + (0));
 
     shadowOAM[30].attr0 = 3 | (0 << 13) | (0 << 14);
     shadowOAM[30].attr1 = 95 | (0 << 14);
-    shadowOAM[30].attr2 = ((0) << 12) | ((4)*32 + ((score / 10)));
+    shadowOAM[30].attr2 = ((0) << 12) | ((31)*32 + ((score / 10)));
 
     shadowOAM[31].attr0 = 3 | (0 << 13) | (0 << 14);
     shadowOAM[31].attr1 = 101 | (0 << 14);
-    shadowOAM[31].attr2 = ((0) << 12) | ((4)*32 + (score % 10));
+    shadowOAM[31].attr2 = ((0) << 12) | ((31)*32 + (score % 10));
 }

@@ -23,57 +23,45 @@ goToSplash:
 	@ frame_needed = 0, uses_anonymous_args = 0
 	push	{r4, r5, r6, lr}
 	mov	r3, #256
-	ldr	r4, .L4
+	ldr	r5, .L4
 	mov	r2, #83886080
 	mov	r0, #3
 	ldr	r1, .L4+4
 	mov	lr, pc
-	bx	r4
+	bx	r5
+	mov	r3, #3376
 	mov	r2, #100663296
 	mov	r0, #3
-	ldr	r3, .L4+8
-	ldr	r1, .L4+12
+	ldr	r1, .L4+8
 	mov	lr, pc
-	bx	r4
+	bx	r5
+	mov	r0, #3
+	ldr	r2, .L4+12
+	ldr	r1, .L4+16
 	mov	r3, #1024
-	mov	r0, #3
-	ldr	r2, .L4+16
-	ldr	r1, .L4+20
 	mov	lr, pc
-	bx	r4
-	mov	r3, #16384
-	mov	r0, #3
-	ldr	r2, .L4+24
-	ldr	r1, .L4+28
-	mov	lr, pc
-	bx	r4
-	mov	r0, #3
-	ldr	r2, .L4+32
-	ldr	r1, .L4+36
-	mov	r3, #256
-	mov	lr, pc
-	bx	r4
-	ldr	r3, .L4+40
+	bx	r5
+	ldr	r3, .L4+20
 	mov	lr, pc
 	bx	r3
-	mov	r5, #67108864
+	mov	r4, #67108864
 	mov	r2, #7936
 	mov	r3, #512
-	strh	r2, [r5, #8]	@ movhi
+	strh	r2, [r4, #8]	@ movhi
 	mov	r0, #3
 	mov	r2, #117440512
-	ldr	r1, .L4+44
+	ldr	r1, .L4+24
 	mov	lr, pc
-	bx	r4
+	bx	r5
 	mov	r3, #0
 	mov	r2, #256
-	ldr	r0, .L4+48
-	ldr	r1, .L4+52
-	strh	r3, [r5, #16]	@ movhi
-	strh	r3, [r5, #18]	@ movhi
+	ldr	r0, .L4+28
+	ldr	r1, .L4+32
+	strh	r3, [r4, #16]	@ movhi
+	strh	r3, [r4, #18]	@ movhi
 	str	r3, [r0]
 	str	r3, [r1]
-	strh	r2, [r5]	@ movhi
+	strh	r2, [r4]	@ movhi
 	pop	{r4, r5, r6, lr}
 	bx	lr
 .L5:
@@ -81,14 +69,9 @@ goToSplash:
 .L4:
 	.word	DMANow
 	.word	splashScreenPal
-	.word	5168
 	.word	splashScreenTiles
 	.word	100726784
 	.word	splashScreenMap
-	.word	100728832
-	.word	spritesheetTiles
-	.word	83886592
-	.word	spritesheetPal
 	.word	hideSprites
 	.word	shadowOAM
 	.word	state
@@ -118,6 +101,9 @@ initialize:
 	strh	r1, [r2]	@ movhi
 	mov	lr, pc
 	bx	r3
+	ldr	r3, .L8+12
+	mov	lr, pc
+	bx	r3
 	pop	{r4, lr}
 	b	goToSplash
 .L9:
@@ -126,6 +112,7 @@ initialize:
 	.word	buttons
 	.word	oldButtons
 	.word	setupInterrupts
+	.word	setupSounds
 	.size	initialize, .-initialize
 	.align	2
 	.syntax unified
@@ -222,57 +209,83 @@ goToGame:
 	@ Function supports interworking.
 	@ args = 0, pretend = 0, frame = 0
 	@ frame_needed = 0, uses_anonymous_args = 0
-	push	{r4, lr}
 	ldr	r3, .L20
+	push	{r4, lr}
+	ldr	r1, [r3]
+	mov	r2, #1
+	ldr	r0, .L20+4
+	ldr	r3, .L20+8
 	mov	lr, pc
 	bx	r3
+	ldr	r3, .L20+12
+	ldr	r4, .L20+16
+	mov	lr, pc
+	bx	r3
+	mov	r3, #16384
+	mov	r0, #3
+	ldr	r2, .L20+20
+	ldr	r1, .L20+24
+	mov	lr, pc
+	bx	r4
+	mov	r3, #256
+	mov	r0, #3
+	ldr	r2, .L20+28
+	ldr	r1, .L20+32
+	mov	lr, pc
+	bx	r4
 	mov	r2, #67108864
 	mov	r3, #4352
 	mov	r1, #24064
-	ldr	r4, .L20+4
 	strh	r3, [r2]	@ movhi
 	mov	r0, #3
 	strh	r1, [r2, #8]	@ movhi
 	mov	r3, #256
 	mov	r2, #83886080
-	ldr	r1, .L20+8
+	ldr	r1, .L20+36
 	mov	lr, pc
 	bx	r4
-	mov	r3, #2944
+	mov	r3, #3200
 	mov	r2, #100663296
 	mov	r0, #3
-	ldr	r1, .L20+12
+	ldr	r1, .L20+40
 	mov	lr, pc
 	bx	r4
 	mov	r0, #3
-	ldr	r2, .L20+16
-	ldr	r1, .L20+20
-	mov	r3, #2048
+	ldr	r2, .L20+44
+	ldr	r1, .L20+48
+	mov	r3, #3072
 	mov	lr, pc
 	bx	r4
-	ldr	r3, .L20+24
+	ldr	r3, .L20+52
 	mov	lr, pc
 	bx	r3
 	mov	r3, #512
 	mov	r2, #117440512
 	mov	r0, #3
-	ldr	r1, .L20+28
+	ldr	r1, .L20+56
 	mov	lr, pc
 	bx	r4
 	mov	r2, #2
-	ldr	r3, .L20+32
+	ldr	r3, .L20+60
 	pop	{r4, lr}
 	str	r2, [r3]
 	bx	lr
 .L21:
 	.align	2
 .L20:
+	.word	backgroundSound_length
+	.word	backgroundSound_data
+	.word	playSoundA
 	.word	waitForVBlank
 	.word	DMANow
-	.word	backgroundPal
-	.word	backgroundTiles
+	.word	100728832
+	.word	spritesheetTiles
+	.word	83886592
+	.word	spritesheetPal
+	.word	gameScreenPal
+	.word	gameScreenTiles
 	.word	100724736
-	.word	backgroundMap
+	.word	gameScreenMap
 	.word	hideSprites
 	.word	shadowOAM
 	.word	state
@@ -414,7 +427,7 @@ goToPause:
 	mov	r2, #100663296
 	strh	r3, [r1, #8]	@ movhi
 	strh	r0, [r1, #16]	@ movhi
-	mov	r3, #3504
+	mov	r3, #3088
 	strh	r0, [r1, #18]	@ movhi
 	mov	r0, #3
 	ldr	r1, .L52+8
@@ -482,8 +495,12 @@ pause:
 	pop	{r4, lr}
 	bx	lr
 .L65:
+	bl	goToGame
+	ldr	r3, .L66+8
+	mov	lr, pc
+	bx	r3
 	pop	{r4, lr}
-	b	goToGame
+	bx	lr
 .L64:
 	bl	goToSplash
 	ldrh	r3, [r4]
@@ -493,6 +510,7 @@ pause:
 .L66:
 	.word	oldButtons
 	.word	buttons
+	.word	unpauseSound
 	.size	pause, .-pause
 	.align	2
 	.global	goToWin
@@ -518,7 +536,7 @@ goToWin:
 	mov	r2, #100663296
 	strh	r3, [r1, #8]	@ movhi
 	strh	r0, [r1, #16]	@ movhi
-	mov	r3, #2720
+	mov	r3, #2320
 	strh	r0, [r1, #18]	@ movhi
 	mov	r0, #3
 	ldr	r1, .L70+8
@@ -601,7 +619,7 @@ goToLose:
 	mov	r2, #100663296
 	strh	r3, [r1, #8]	@ movhi
 	strh	r0, [r1, #16]	@ movhi
-	mov	r3, #3072
+	mov	r3, #3168
 	strh	r0, [r1, #18]	@ movhi
 	mov	r0, #3
 	ldr	r1, .L78+8
@@ -687,13 +705,22 @@ game:
 	pop	{r4, lr}
 	bx	lr
 .L83:
+	ldr	r3, .L93+36
+	mov	lr, pc
+	bx	r3
 	pop	{r4, lr}
 	b	goToLose
 .L92:
+	ldr	r3, .L93+36
+	mov	lr, pc
+	bx	r3
 	bl	goToWin
 	b	.L82
 .L91:
 	bl	goToPause
+	ldr	r3, .L93+40
+	mov	lr, pc
+	bx	r3
 	b	.L81
 .L94:
 	.align	2
@@ -707,6 +734,8 @@ game:
 	.word	lives
 	.word	gasLevel
 	.word	__aeabi_fcmple
+	.word	stopSound
+	.word	pauseSound
 	.size	game, .-game
 	.section	.text.startup,"ax",%progbits
 	.align	2
@@ -827,8 +856,10 @@ lose:
 	.comm	oldButtons,2,2
 	.comm	buttons,2,2
 	.comm	state,4,4
+	.comm	soundB,32,4
+	.comm	soundA,32,4
 	.comm	coins,320,4
 	.comm	fuels,84,4
-	.comm	balloons,364,4
+	.comm	balloons,308,4
 	.comm	bullets,140,4
 	.ident	"GCC: (devkitARM release 53) 9.1.0"

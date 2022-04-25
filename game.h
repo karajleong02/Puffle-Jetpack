@@ -1,7 +1,7 @@
 //Constants
 #define BULLETCOUNT 5
 #define MAPHEIGHT 160
-#define MAPWIDTH 512
+#define MAPWIDTH 560
 
 //Struct for Bullet
 typedef struct {

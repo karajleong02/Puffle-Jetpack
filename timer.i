@@ -165,10 +165,10 @@ void interruptHandler(void) {
 
   *(unsigned short*)0x4000208 = 0;
 
-  if ( *(volatile unsigned short*)0x4000202 & 1<<3 ) {
-    time_cs++;
-    if (time_cs > 99) time_cs = 0;
-  }
+
+
+
+
 
   if ( *(volatile unsigned short*)0x4000202 & 1<<4 ) {
     time_s++;
@@ -177,26 +177,7 @@ void interruptHandler(void) {
       time_s = time_s - 100;
     }
   }
-
-  if ( *(volatile unsigned short*)0x4000202 & 1<<5 ) {
-    time_m++;
-  }
-
-
-
-
-  if ((*(volatile unsigned short*)0x4000202 & 1 << 12) && (~(*(volatile unsigned short *)0x04000130) & (1 << 3))) {
-    *(volatile unsigned short*)0x4000102 = (0<<7);
-    *(volatile unsigned short*)0x4000106 = (0<<7);
-    *(volatile unsigned short*)0x400010A = (0<<7);
-    time_cs = 0;
-    time_s = 0;
-    time_m = 0;
-    *(volatile unsigned short*)0x4000102 = 3 | (1<<7) | (1<<6);
-    *(volatile unsigned short*)0x4000106 = 3 | (1<<7) | (1<<6);
-    *(volatile unsigned short*)0x400010A = (1<<2) | (1<<7) | (1<<6);
-  }
-# 62 "timer.c"
+# 59 "timer.c"
   *(volatile unsigned short*)0x4000202 = *(volatile unsigned short*)0x4000202;
   *(unsigned short*)0x4000208 = 1;
 }
@@ -204,20 +185,20 @@ void interruptHandler(void) {
 
 void enableTimerInterrupts(void) {
 
-  *(unsigned short*)0x4000200 = 1<<3 | 1<<4 | 1<<5;
+  *(unsigned short*)0x4000200 = 1<<4 ;
 
 
-  *(volatile unsigned short*)0x4000102 = 0;
-  *(volatile unsigned short*)0x4000100 = 65536 - 164;
-  *(volatile unsigned short*)0x4000102 = 3 | (1<<7) | (1<<6);
+
+
+
 
   *(volatile unsigned short*)0x4000106 = 1;
   *(volatile unsigned short*)0x4000104 = 65536 - 16384;
   *(volatile unsigned short*)0x4000106 = 3 | (1<<7) | (1<<6);
 
-  *(volatile unsigned short*)0x400010A = 0;
-  *(volatile unsigned short*)0x4000108 = 65536 - 60;
-  *(volatile unsigned short*)0x400010A = (1<<2) | (1<<7) | (1<<6);
+
+
+
 }
 
 void setupInterrupts(void) {

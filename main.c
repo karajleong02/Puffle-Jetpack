@@ -17,6 +17,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include "myLib.h"
+#include "gameScreen.h"
 #include "splashScreen.h"
 #include "pauseScreen.h"
 #include "winScreen.h"
@@ -27,6 +28,12 @@
 #include "obstacles.h"
 #include "background.h"
 #include "timer.h"
+#include "sound.h"
+
+#include "backgroundSound.h"
+#include "coinCollect.h"
+#include "fuelCollect.h"
+#include "balloonPop.h"
 
 // Prototypes
 void initialize();
@@ -108,6 +115,8 @@ void initialize() {
     oldButtons = 0;
 
     setupInterrupts();
+    setupSounds();
+    // setupInterrupt();
 
     goToSplash();
 }
@@ -120,8 +129,7 @@ void goToSplash() {
     DMANow(3, splashScreenTiles, &CHARBLOCK[0], splashScreenTilesLen/2);
     DMANow(3, splashScreenMap, &SCREENBLOCK[31], splashScreenMapLen/2);
 
-    DMANow(3, spritesheetTiles, &CHARBLOCK[4], spritesheetTilesLen / 2);
-    DMANow(3, spritesheetPal, SPRITEPALETTE, spritesheetPalLen / 2);
+   
 
     // re-hide the sprites
     hideSprites();
@@ -192,17 +200,21 @@ void instructions() {
 
 // Sets up the game state.
 void goToGame() {
+    playSoundA(backgroundSound_data, backgroundSound_length, 1);
     waitForVBlank();
     
+    DMANow(3, spritesheetTiles, &CHARBLOCK[4], spritesheetTilesLen / 2);
+    DMANow(3, spritesheetPal, SPRITEPALETTE, spritesheetPalLen / 2);
+
     REG_DISPCTL = MODE0 | BG0_ENABLE | SPRITE_ENABLE;
     REG_BG0CNT = BG_4BPP | BG_SIZE_WIDE | BG_CHARBLOCK(0) | BG_SCREENBLOCK(30);
 
 
 
     // Load tiles to charblock and map to screenblock
-    DMANow(3, backgroundPal, PALETTE, 256);
-    DMANow(3, backgroundTiles, &CHARBLOCK[0], backgroundTilesLen/2);
-    DMANow(3, backgroundMap, &SCREENBLOCK[30], backgroundMapLen/2);
+    DMANow(3, gameScreenPal, PALETTE, 256);
+    DMANow(3, gameScreenTiles, &CHARBLOCK[0], gameScreenTilesLen/2);
+    DMANow(3, gameScreenMap, &SCREENBLOCK[30], gameScreenMapLen/2);
 
 
     // re-hide the sprites
@@ -221,11 +233,14 @@ void game() {
     
     if (BUTTON_PRESSED(BUTTON_B)) {
         goToPause();
+        pauseSound();
     }
     if (puffle.worldCol >= 475) {
+        stopSound();
         goToWin();
     }
     if (lives <= 0 || gasLevel <= 0) {
+        stopSound();
         goToLose();
     }
 }
@@ -262,6 +277,7 @@ void pause() {
     }
     if (BUTTON_PRESSED(BUTTON_START)) {
         goToGame();
+        unpauseSound();
     }
 }
 

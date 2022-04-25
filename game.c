@@ -12,7 +12,8 @@ SPRITE puffle;
 BULLET bullets[BULLETCOUNT];
 
 //Puffle animation states
-enum {PUFFLELEFT, PUFFLERIGHT};
+enum {PUFFLERIGHT, PUFFLELEFT};
+
 
 void initGame() {
     initObstacles();
@@ -53,13 +54,13 @@ void initPlayer() {
     // puffle.col = puffle.worldCol;
     puffle.rdel = 1;
     puffle.cdel = 1;
-    puffle.width = 14;
-    puffle.height = 14;
+    puffle.width = 24;
+    puffle.height = 32;
     puffle.aniCounter = 0;
-    puffle.aniState = PUFFLELEFT;
+    puffle.aniState = PUFFLERIGHT;
     puffle.prevAniState = 0;
     puffle.curFrame = 0;
-    puffle.numFrames = 0;
+    puffle.numFrames = 3;
     puffle.hide = 0;
 }
 
@@ -68,8 +69,8 @@ void drawPlayer() {
         shadowOAM[0].attr0 |= ATTR0_HIDE;
     } else {
         shadowOAM[0].attr0 = ((puffle.worldRow - vOff) & ROWMASK) | ATTR0_4BPP | ATTR0_SQUARE;
-        shadowOAM[0].attr1 = ((puffle.worldCol - hOff) & COLMASK) | ATTR1_SMALL;
-        shadowOAM[0].attr2 = ATTR2_PALROW(0) | ATTR2_TILEID(0, 0);
+        shadowOAM[0].attr1 = ((puffle.worldCol - hOff) & COLMASK) | ATTR1_MEDIUM;
+        shadowOAM[0].attr2 = ATTR2_PALROW(0) | ATTR2_TILEID(7 + 4 * puffle.aniState, 2 + 4 * puffle.curFrame);
     }
 }
 
@@ -77,7 +78,7 @@ void updatePlayer() {
     if(BUTTON_HELD(BUTTON_LEFT)) {
         if (puffle.worldCol > 0) {
             puffle.worldCol -= puffle.cdel;
-
+            puffle.aniState = PUFFLELEFT;
             if (hOff > 0 && (puffle.worldCol  - hOff) < SCREENWIDTH / 2) {
                 hOff--;
                 
@@ -88,7 +89,7 @@ void updatePlayer() {
     if(BUTTON_HELD(BUTTON_RIGHT)) {
         if (puffle.worldCol + puffle.width < MAPWIDTH) {
             puffle.worldCol += puffle.cdel;
-
+            puffle.aniState = PUFFLERIGHT;
             if (hOff < MAPWIDTH - SCREENWIDTH && (puffle.worldCol + hOff) > SCREENWIDTH / 2) {
                 hOff++;
             }
@@ -106,7 +107,7 @@ void updatePlayer() {
         
     }
     if(BUTTON_HELD(BUTTON_DOWN)) {
-        if (puffle.worldRow + puffle.height < MAPHEIGHT) {
+        if ((puffle.worldRow + puffle.height) < MAPHEIGHT) {
             puffle.worldRow += puffle.rdel;
 
             if (vOff < MAPHEIGHT - SCREENHEIGHT && (puffle.worldRow  + vOff) > SCREENHEIGHT / 2) {
@@ -117,7 +118,14 @@ void updatePlayer() {
     if (BUTTON_PRESSED(BUTTON_A)) {
         fireBullet();
     }
-    
+    if (puffle.aniCounter < 30) {
+        if (puffle.aniCounter % 10 == 0) {
+            puffle.curFrame = (puffle.curFrame + 1) % puffle.numFrames;
+        }
+        puffle.aniCounter++;
+    } else {
+        puffle.aniCounter = 0;
+    }
     
 }
 
@@ -127,8 +135,8 @@ void initBullet() {
         bullets[i].worldCol = puffle.worldCol;
         bullets[i].origCol = bullets[i].worldCol;
         bullets[i].cdel = 1;
-        bullets[i].width = 8;
-        bullets[i].height = 2;
+        bullets[i].width = 7;
+        bullets[i].height = 3;
         bullets[i].active = 0;
     }
 }
@@ -148,9 +156,9 @@ void fireBullet() {
 void drawBullet() {
     for(int in = 0; in < BULLETCOUNT; in++) {
         if (bullets[in].active) {
-            shadowOAM[in+21].attr0 = bullets[in].worldRow | ATTR0_4BPP | ATTR0_SQUARE;
+            shadowOAM[in+21].attr0 = bullets[in].worldRow | ATTR0_4BPP | ATTR0_WIDE;
             shadowOAM[in+21].attr1 = (bullets[in].worldCol-hOff) | ATTR1_TINY;
-            shadowOAM[in+21].attr2 = ATTR2_PALROW(0) | ATTR2_TILEID(0, 2);  
+            shadowOAM[in+21].attr2 = ATTR2_PALROW(0) | ATTR2_TILEID(0, 4);  
         } else {
             shadowOAM[in+21].attr0 = ATTR0_HIDE;
         }
@@ -197,44 +205,44 @@ void drawUI() {
     //draws Fuel word
     shadowOAM[26].attr0 = 0 | ATTR0_4BPP | ATTR0_WIDE;
     shadowOAM[26].attr1 = 0 | ATTR1_MEDIUM;
-    shadowOAM[26].attr2 = ATTR2_PALROW(0) | ATTR2_TILEID(7, 0);
+    shadowOAM[26].attr2 = ATTR2_PALROW(0) | ATTR2_TILEID(0, 12);
     
     //draws Fuel counter
-    shadowOAM[27].attr0 = 0 | ATTR0_4BPP | ATTR0_WIDE;
-    shadowOAM[27].attr1 = 33 | ATTR1_MEDIUM;
+    shadowOAM[27].attr0 = 3 | ATTR0_4BPP | ATTR0_WIDE;
+    shadowOAM[27].attr1 = 25 | ATTR1_SMALL;
    
     if (gasLevel > 75) {
-         shadowOAM[27].attr2 = ATTR2_PALROW(0) | ATTR2_TILEID(11, 0);
+         shadowOAM[27].attr2 = ATTR2_PALROW(0) | ATTR2_TILEID(0, 8);
     } else if (gasLevel > 50) {
-         shadowOAM[27].attr2 = ATTR2_PALROW(0) | ATTR2_TILEID(11, 2);
+         shadowOAM[27].attr2 = ATTR2_PALROW(0) | ATTR2_TILEID(0, 9);
     } else if (gasLevel > 25) {
-         shadowOAM[27].attr2 = ATTR2_PALROW(0) | ATTR2_TILEID(11, 4);
+         shadowOAM[27].attr2 = ATTR2_PALROW(0) | ATTR2_TILEID(0, 10);
     } else {
-         shadowOAM[27].attr2 = ATTR2_PALROW(0) | ATTR2_TILEID(11, 6);
+         shadowOAM[27].attr2 = ATTR2_PALROW(0) | ATTR2_TILEID(0, 11);
     }
 
     //draw Heart Tracker
     shadowOAM[28].attr0 = 0 | ATTR0_4BPP | ATTR0_WIDE;
-    shadowOAM[28].attr1 = 208 | ATTR1_MEDIUM;
+    shadowOAM[28].attr1 = 208 | ATTR1_SMALL;
     
     if (lives == 3) {
-        shadowOAM[28].attr2 = ATTR2_PALROW(0) | ATTR2_TILEID(15, 0);
+        shadowOAM[28].attr2 = ATTR2_PALROW(0) | ATTR2_TILEID(0, 5);
     } else if (lives == 2) {
-        shadowOAM[28].attr2 = ATTR2_PALROW(0) | ATTR2_TILEID(15, 2);
+        shadowOAM[28].attr2 = ATTR2_PALROW(0) | ATTR2_TILEID(0, 6);
     } else if (lives == 1) {
-        shadowOAM[28].attr2 = ATTR2_PALROW(0) | ATTR2_TILEID(15, 4);
+        shadowOAM[28].attr2 = ATTR2_PALROW(0) | ATTR2_TILEID(0, 7);
     }
 
     //draw Score
     shadowOAM[29].attr0 = 0 | ATTR0_4BPP | ATTR0_WIDE;
     shadowOAM[29].attr1 = 65 | ATTR1_MEDIUM;
-    shadowOAM[29].attr2 = ATTR2_PALROW(0) | ATTR2_TILEID(7, 2);
+    shadowOAM[29].attr2 = ATTR2_PALROW(0) | ATTR2_TILEID(0, 14);
     //Tens place
     shadowOAM[30].attr0 = 3 | ATTR0_4BPP | ATTR0_SQUARE;
     shadowOAM[30].attr1 = 95 | ATTR1_TINY;
-    shadowOAM[30].attr2 = ATTR2_PALROW(0) | ATTR2_TILEID((score / 10), 4);
+    shadowOAM[30].attr2 = ATTR2_PALROW(0) | ATTR2_TILEID((score / 10), 31);
     //Ones place
     shadowOAM[31].attr0 = 3 | ATTR0_4BPP | ATTR0_SQUARE;
     shadowOAM[31].attr1 = 101 | ATTR1_TINY;
-    shadowOAM[31].attr2 = ATTR2_PALROW(0) | ATTR2_TILEID(score % 10, 4);
+    shadowOAM[31].attr2 = ATTR2_PALROW(0) | ATTR2_TILEID(score % 10, 31);
 }

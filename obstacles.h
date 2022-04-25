@@ -12,8 +12,6 @@ typedef struct {
     int width;
     int height;
     int aniCounter;
-    int aniState;
-    int prevAniState;
     int currFrame;
     int numFrames;
     int hit;
