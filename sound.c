@@ -30,8 +30,6 @@ void playSoundA( const signed char* sound, int length, int loops) {
 
     REG_TM0D = -ticks;
     REG_TM0CNT = TIMER_ON;
-
-    // TODO 2.1:  Assign all of soundA’s appropriate struct values
     soundA.data = sound;
     soundA.length = length;
     soundA.loops = loops;
@@ -53,8 +51,6 @@ void playSoundB( const signed char* sound, int length, int loops) {
 
     REG_TM1D = -ticks;
     REG_TM1CNT = TIMER_ON;
-
-     // TODO 2.2:  Assign all of soundB’s appropriate struct values
     soundB.data = sound;
     soundB.length = length;
     soundB.loops = loops;
@@ -80,9 +76,6 @@ void interruptHandlers() {
 
 	if(REG_IF & INT_VBLANK) {
         if (soundA.isPlaying) {
-
-            //TODO 3.2 - Handle soundA playing in the interruptHandler function
-            //soundA.vBlankCount++;
             soundA.vBlankCount = soundA.vBlankCount + 1;
             if (soundA.vBlankCount > soundA.duration) {
                 if (soundA.loops) {
@@ -96,9 +89,6 @@ void interruptHandlers() {
         }
 
         if (soundB.isPlaying) {
-
-            //TODO 3.3 - Handle soundB playing in the interruptHandler function
-
             soundB.vBlankCount = soundB.vBlankCount + 1;
             if (soundB.vBlankCount > soundB.duration) {
                 if (soundB.loops) {
@@ -120,7 +110,6 @@ void interruptHandlers() {
 
 void pauseSound() {
 
-	// TODO 4.1 - Complete the pauseSound function
     soundA.isPlaying = 0;
     soundB.isPlaying = 0;
     REG_TM0CNT = 0;
@@ -128,8 +117,6 @@ void pauseSound() {
 }
 
 void unpauseSound() {
-
-    // TODO 4.2 - Complete the unpauseSound function
     soundA.isPlaying = 1;
     soundB.isPlaying = 1;
     REG_TM0CNT = TIMER_ON;
@@ -137,8 +124,6 @@ void unpauseSound() {
 }
 
 void stopSound() {
-
-    // TODO 4.3 - Complete the stopSound function
     soundA.isPlaying = 0;
     dma[1].cnt = 0;
     REG_TM0CNT = 0;

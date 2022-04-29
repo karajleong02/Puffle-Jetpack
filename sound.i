@@ -155,8 +155,6 @@ void playSoundA( const signed char* sound, int length, int loops) {
 
     *(volatile unsigned short*)0x4000100 = -ticks;
     *(volatile unsigned short*)0x4000102 = (1<<7);
-
-
     soundA.data = sound;
     soundA.length = length;
     soundA.loops = loops;
@@ -178,8 +176,6 @@ void playSoundB( const signed char* sound, int length, int loops) {
 
     *(volatile unsigned short*)0x4000104 = -ticks;
     *(volatile unsigned short*)0x4000106 = (1<<7);
-
-
     soundB.data = sound;
     soundB.length = length;
     soundB.loops = loops;
@@ -205,9 +201,6 @@ void interruptHandlers() {
 
  if(*(volatile unsigned short*)0x4000202 & 1 << 0) {
         if (soundA.isPlaying) {
-
-
-
             soundA.vBlankCount = soundA.vBlankCount + 1;
             if (soundA.vBlankCount > soundA.duration) {
                 if (soundA.loops) {
@@ -221,9 +214,6 @@ void interruptHandlers() {
         }
 
         if (soundB.isPlaying) {
-
-
-
             soundB.vBlankCount = soundB.vBlankCount + 1;
             if (soundB.vBlankCount > soundB.duration) {
                 if (soundB.loops) {
@@ -245,7 +235,6 @@ void interruptHandlers() {
 
 void pauseSound() {
 
-
     soundA.isPlaying = 0;
     soundB.isPlaying = 0;
     *(volatile unsigned short*)0x4000102 = 0;
@@ -253,8 +242,6 @@ void pauseSound() {
 }
 
 void unpauseSound() {
-
-
     soundA.isPlaying = 1;
     soundB.isPlaying = 1;
     *(volatile unsigned short*)0x4000102 = (1<<7);
@@ -262,8 +249,6 @@ void unpauseSound() {
 }
 
 void stopSound() {
-
-
     soundA.isPlaying = 0;
     dma[1].cnt = 0;
     *(volatile unsigned short*)0x4000102 = 0;

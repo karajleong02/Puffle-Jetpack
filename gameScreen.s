@@ -34,33 +34,33 @@ gameScreenPal:
 	.short	2114
 	.short	4195
 	.short	13708
-	.short	18003
-	.short	237
-	.short	12776
-	.short	30251
 	.short	0
-	.short	23927
-	.short	3360
-	.short	5755
-	.short	28502
-	.short	20709
-	.short	4564
-	.short	797
-	.short	6342
-	.short	5851
-	.short	31641
-	.short	6395
-	.short	13740
-	.short	7556
-	.short	32397
-	.short	638
-	.short	32702
-	.short	7998
-	.short	4312
-	.short	15821
-	.short	799
-	.short	2148
-	.short	32698
+	.short	0
+	.short	0
+	.short	0
+	.short	0
+	.short	0
+	.short	0
+	.short	0
+	.short	0
+	.short	0
+	.short	0
+	.short	0
+	.short	0
+	.short	0
+	.short	0
+	.short	0
+	.short	0
+	.short	0
+	.short	0
+	.short	0
+	.short	0
+	.short	0
+	.short	0
+	.short	0
+	.short	0
+	.short	0
+	.short	0
 	.short	0
 	.short	0
 	.short	0

@@ -13,7 +13,7 @@
 BALLOON balloons[BALLOONCOUNT];
 FUEL fuels[FUELCOUNT];
 COIN coins[COINCOUNT];
-
+cheat = 0;
 enum {UP}; //anistates for balloons
 
 void initObstacles() {
@@ -37,7 +37,7 @@ void updateObstacles() {
 void initBalloons() {
     int number = 1;
     for (int i = 0; i < BALLOONCOUNT; i++) {
-        balloons[i].worldCol = i * 57 + 42;
+        balloons[i].worldCol = (i * 33 + 42);
         balloons[i].worldRow = rand() % 124 + 12;
         balloons[i].shift = 0;
         balloons[i].rdel = 2;
@@ -60,7 +60,7 @@ void updateBalloons() {
                 balloons[i].hit = 1;
                 balloons[i].active = 0;
                 shadowOAM[i+1].attr0 |= ATTR0_HIDE;
-                playSoundB(balloonPop_data, balloonPop_length, 0);
+                //playSoundB(balloonPop_data, balloonPop_length, 0);
                 lives--;
             }
             if( balloons[i].worldCol - hOff < 0) {
@@ -83,9 +83,11 @@ void drawBalloons() {
         if (!balloons[i].active) {
             shadowOAM[i+1].attr0 |= ATTR0_HIDE;
         } else {
-            shadowOAM[i+1].attr0 = (balloons[i].worldRow & ROWMASK) | ATTR0_4BPP | ATTR0_TALL;
-            shadowOAM[i+1].attr1 = ((balloons[i].worldCol - hOff) & COLMASK) | ATTR1_MEDIUM;
-            shadowOAM[i+1].attr2 = ATTR2_PALROW(0) | ATTR2_TILEID(4, 2 + 4 * balloons[i].currFrame);
+            if ((balloons[i].worldCol + balloons[i].width - spritehOff >= 0) &&(balloons[i].worldCol - spritehOff <= SCREENWIDTH)){
+                shadowOAM[i+1].attr0 = (balloons[i].worldRow & ROWMASK) | ATTR0_4BPP | ATTR0_TALL;
+                shadowOAM[i+1].attr1 = ((balloons[i].worldCol - spritehOff) & COLMASK) | ATTR1_MEDIUM;
+                shadowOAM[i+1].attr2 = ATTR2_PALROW(0) | ATTR2_TILEID(4, 2 + 4 * balloons[i].currFrame);
+            }
         }
     }
 }
@@ -93,7 +95,7 @@ void drawBalloons() {
 void initFuel() {
     int number = -1;
     for (int i = 0; i < FUELCOUNT; i++) {
-        fuels[i].worldCol = i * 140 + 97;
+        fuels[i].worldCol = (i * 224 + 100);
         fuels[i].worldRow = rand() % 124 + 12;
         fuels[i].shift = 0;
         fuels[i].width = 10;
@@ -109,7 +111,7 @@ void updateFuel() {
         if(!fuels[i].collected && collision(puffle.worldCol, puffle.worldRow, puffle.width, puffle.height, fuels[i].worldCol, fuels[i].worldRow, fuels[i].width, fuels[i].height)) {
             fuels[i].collected = 1;
             fuels[i].active = 0;
-            shadowOAM[i+8].attr0 |= ATTR0_HIDE;
+            shadowOAM[i+14].attr0 |= ATTR0_HIDE;
             playSoundB(fuelCollect_data, fuelCollect_length, 0);
             setFuelLevel(1);
         }
@@ -122,11 +124,15 @@ void updateFuel() {
 void drawFuel() {
     for (int i = 0; i < FUELCOUNT; i++) {
         if (!fuels[i].active) {
-            shadowOAM[i+8].attr0 |= ATTR0_HIDE;
+            shadowOAM[i+22].attr0 |= ATTR0_HIDE;
         } else {
-            shadowOAM[i+8].attr0 = (fuels[i].worldRow & ROWMASK) | ATTR0_4BPP | ATTR0_SQUARE;
-            shadowOAM[i+8].attr1 = ((fuels[i].worldCol-hOff) & COLMASK) | ATTR1_SMALL;
-            shadowOAM[i+8].attr2 = ATTR2_PALROW(0) | ATTR2_TILEID(2, 2);
+            if ((fuels[i].worldCol + fuels[i].width - spritehOff >= 0) && (fuels[i].worldCol - spritehOff <= SCREENWIDTH)) {
+
+            
+                shadowOAM[i+22].attr0 = (fuels[i].worldRow & ROWMASK) | ATTR0_4BPP | ATTR0_SQUARE;
+                shadowOAM[i+22].attr1 = ((fuels[i].worldCol - spritehOff) & COLMASK) | ATTR1_SMALL;
+                shadowOAM[i+22].attr2 = ATTR2_PALROW(0) | ATTR2_TILEID(2, 2);
+            }
         }
     }
 }
@@ -134,7 +140,7 @@ void drawFuel() {
 void initCoin() {
     int number = -1;
     for (int i = 0; i < COINCOUNT; i++) {
-        coins[i].worldCol = i * 42 + 70;
+        coins[i].worldCol = (i * 21 + 70);
         coins[i].worldRow = rand() % 124 + 12;
         coins[i].shift = 0;
         coins[i].width = 6;
@@ -150,7 +156,7 @@ void updateCoin() {
         if(!coins[i].collected && collision(puffle.worldCol, puffle.worldRow, puffle.width, puffle.height, coins[i].worldCol, coins[i].worldRow, coins[i].width, coins[i].height)) {
             coins[i].collected = 1;
             coins[i].active = 0;
-            shadowOAM[i+11].attr0 |= ATTR0_HIDE;
+            shadowOAM[i+24].attr0 |= ATTR0_HIDE;
             playSoundB(coinCollect_data, coinCollect_length, 0);
             score+=5;
         }
@@ -163,11 +169,13 @@ void updateCoin() {
 void drawCoin() {
     for (int i = 0; i < COINCOUNT; i++) {
         if (!coins[i].active) {
-            shadowOAM[i+11].attr0 |= ATTR0_HIDE;
+            shadowOAM[i+24].attr0 |= ATTR0_HIDE;
         } else {
-            shadowOAM[i+11].attr0 = (coins[i].worldRow & ROWMASK) | ATTR0_4BPP | ATTR0_SQUARE;
-            shadowOAM[i+11].attr1 = ((coins[i].worldCol - hOff) & COLMASK) | ATTR1_SMALL;
-            shadowOAM[i+11].attr2 = ATTR2_PALROW(0) | ATTR2_TILEID(0, 2);
+            if ((coins[i].worldCol + coins[i].width - spritehOff >= 0) &&(coins[i].worldCol - spritehOff <= SCREENWIDTH)) {
+                shadowOAM[i+24].attr0 = (coins[i].worldRow & ROWMASK) | ATTR0_4BPP | ATTR0_SQUARE;
+                shadowOAM[i+24].attr1 = ((coins[i].worldCol - spritehOff) & COLMASK) | ATTR1_SMALL;
+                shadowOAM[i+24].attr2 = ATTR2_PALROW(0) | ATTR2_TILEID(0, 2);
+            }
         }
     }
 }

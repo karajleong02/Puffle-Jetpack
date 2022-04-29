@@ -2,7 +2,7 @@
 # 1 "<built-in>"
 # 1 "<command-line>"
 # 1 "main.c"
-# 17 "main.c"
+
 # 1 "/opt/devkitpro/devkitARM/arm-none-eabi/include/stdlib.h" 1 3
 # 10 "/opt/devkitpro/devkitARM/arm-none-eabi/include/stdlib.h" 3
 # 1 "/opt/devkitpro/devkitARM/arm-none-eabi/include/machine/ieeefp.h" 1 3
@@ -811,7 +811,7 @@ extern long double _strtold_r (struct _reent *, const char *restrict, char **res
 extern long double strtold (const char *restrict, char **restrict);
 # 336 "/opt/devkitpro/devkitARM/arm-none-eabi/include/stdlib.h" 3
 
-# 18 "main.c" 2
+# 3 "main.c" 2
 # 1 "/opt/devkitpro/devkitARM/arm-none-eabi/include/stdio.h" 1 3
 # 36 "/opt/devkitpro/devkitARM/arm-none-eabi/include/stdio.h" 3
 # 1 "/opt/devkitpro/devkitARM/lib/gcc/arm-none-eabi/9.1.0/include/stddef.h" 1 3 4
@@ -1222,7 +1222,7 @@ _putchar_unlocked(int _c)
 }
 # 797 "/opt/devkitpro/devkitARM/arm-none-eabi/include/stdio.h" 3
 
-# 19 "main.c" 2
+# 4 "main.c" 2
 # 1 "myLib.h" 1
 
 
@@ -1321,7 +1321,7 @@ void DMANow(int channel, volatile const void *src, volatile void *dst, unsigned 
 
 
 int collision(int colA, int rowA, int widthA, int heightA, int colB, int rowB, int widthB, int heightB);
-# 20 "main.c" 2
+# 5 "main.c" 2
 # 1 "gameScreen.h" 1
 # 22 "gameScreen.h"
 extern const unsigned short gameScreenTiles[3200];
@@ -1331,7 +1331,17 @@ extern const unsigned short gameScreenMap[3072];
 
 
 extern const unsigned short gameScreenPal[256];
-# 21 "main.c" 2
+# 6 "main.c" 2
+# 1 "fullBackground.h" 1
+# 22 "fullBackground.h"
+extern const unsigned short fullBackgroundTiles[5104];
+
+
+extern const unsigned short fullBackgroundMap[4096];
+
+
+extern const unsigned short fullBackgroundPal[256];
+# 7 "main.c" 2
 # 1 "splashScreen.h" 1
 # 22 "splashScreen.h"
 extern const unsigned short splashScreenTiles[3376];
@@ -1341,7 +1351,7 @@ extern const unsigned short splashScreenMap[1024];
 
 
 extern const unsigned short splashScreenPal[256];
-# 22 "main.c" 2
+# 8 "main.c" 2
 # 1 "pauseScreen.h" 1
 # 22 "pauseScreen.h"
 extern const unsigned short pauseScreenTiles[3088];
@@ -1351,7 +1361,7 @@ extern const unsigned short pauseScreenMap[1024];
 
 
 extern const unsigned short pauseScreenPal[256];
-# 23 "main.c" 2
+# 9 "main.c" 2
 # 1 "winScreen.h" 1
 # 22 "winScreen.h"
 extern const unsigned short winScreenTiles[2320];
@@ -1361,7 +1371,7 @@ extern const unsigned short winScreenMap[1024];
 
 
 extern const unsigned short winScreenPal[256];
-# 24 "main.c" 2
+# 10 "main.c" 2
 # 1 "loseScreen.h" 1
 # 22 "loseScreen.h"
 extern const unsigned short loseScreenTiles[3168];
@@ -1371,7 +1381,7 @@ extern const unsigned short loseScreenMap[1024];
 
 
 extern const unsigned short loseScreenPal[256];
-# 25 "main.c" 2
+# 11 "main.c" 2
 # 1 "instructionScreen.h" 1
 # 22 "instructionScreen.h"
 extern const unsigned short instructionScreenTiles[5216];
@@ -1381,7 +1391,7 @@ extern const unsigned short instructionScreenMap[1024];
 
 
 extern const unsigned short instructionScreenPal[256];
-# 26 "main.c" 2
+# 12 "main.c" 2
 # 1 "instructionScreen2.h" 1
 # 22 "instructionScreen2.h"
 extern const unsigned short instructionScreen2Tiles[3584];
@@ -1391,14 +1401,14 @@ extern const unsigned short instructionScreen2Map[1024];
 
 
 extern const unsigned short instructionScreen2Pal[256];
-# 27 "main.c" 2
+# 13 "main.c" 2
 # 1 "spritesheet.h" 1
 # 21 "spritesheet.h"
 extern const unsigned short spritesheetTiles[16384];
 
 
 extern const unsigned short spritesheetPal[256];
-# 28 "main.c" 2
+# 14 "main.c" 2
 # 1 "game.h" 1
 
 
@@ -1406,7 +1416,9 @@ extern const unsigned short spritesheetPal[256];
 
 
 
+
 typedef struct {
+    int direction;
     int worldRow;
     int worldCol;
     int origCol;
@@ -1426,21 +1438,26 @@ void updatePlayer();
 void initBullet();
 void fireBullet();
 void drawBullet();
-void updateBullet(BULLET *);
+void updateBullet();
 void setFuelLevel(int);
 void drawUI();
+void drawScore();
 
 
 
 extern int vOff;
 extern int hOff;
+extern int pufflehOff;
+extern int spritehOff;
 extern int score;
 extern int lives;
+extern int screenBlock;
 extern float gasLevel;
 extern SPRITE puffle;
-BULLET bullets[5];
-# 29 "main.c" 2
+BULLET bullets[8];
+# 15 "main.c" 2
 # 1 "obstacles.h" 1
+
 
 
 
@@ -1499,10 +1516,12 @@ void drawCoin();
 void updateCoin();
 
 
-BALLOON balloons[7];
-FUEL fuels[3];
-COIN coins[10];
-# 30 "main.c" 2
+BALLOON balloons[20];
+FUEL fuels[2];
+COIN coins[30];
+
+int cheat;
+# 16 "main.c" 2
 # 1 "background.h" 1
 # 22 "background.h"
 extern const unsigned short backgroundTiles[3200];
@@ -1512,13 +1531,13 @@ extern const unsigned short backgroundMap[3072];
 
 
 extern const unsigned short backgroundPal[256];
-# 31 "main.c" 2
+# 17 "main.c" 2
 # 1 "timer.h" 1
 
 void interruptHandler();
 void enableTimerInterrupts();
 void setupInterrupts();
-# 32 "main.c" 2
+# 18 "main.c" 2
 # 1 "sound.h" 1
 void setupSounds();
 void playSoundA(const signed char* sound, int length, int loops);
@@ -1544,7 +1563,7 @@ typedef struct{
 
 SOUND soundA;
 SOUND soundB;
-# 33 "main.c" 2
+# 19 "main.c" 2
 
 # 1 "backgroundSound.h" 1
 
@@ -1552,28 +1571,28 @@ SOUND soundB;
 extern const unsigned int backgroundSound_sampleRate;
 extern const unsigned int backgroundSound_length;
 extern const signed char backgroundSound_data[];
-# 35 "main.c" 2
+# 21 "main.c" 2
 # 1 "coinCollect.h" 1
 
 
 extern const unsigned int coinCollect_sampleRate;
 extern const unsigned int coinCollect_length;
 extern const signed char coinCollect_data[];
-# 36 "main.c" 2
+# 22 "main.c" 2
 # 1 "fuelCollect.h" 1
 
 
 extern const unsigned int fuelCollect_sampleRate;
 extern const unsigned int fuelCollect_length;
 extern const signed char fuelCollect_data[];
-# 37 "main.c" 2
+# 23 "main.c" 2
 # 1 "balloonPop.h" 1
 
 
 extern const unsigned int balloonPop_sampleRate;
 extern const unsigned int balloonPop_length;
 extern const signed char balloonPop_data[];
-# 38 "main.c" 2
+# 24 "main.c" 2
 
 
 void initialize();
@@ -1611,6 +1630,7 @@ unsigned short oldButtons;
 OBJ_ATTR shadowOAM[128];
 
 int seed;
+int moved;
 
 int main() {
     initialize();
@@ -1654,6 +1674,8 @@ void initialize() {
     buttons = (*(volatile unsigned short *)0x04000130);
     oldButtons = 0;
 
+
+
     setupInterrupts();
     setupSounds();
 
@@ -1680,9 +1702,14 @@ void goToSplash() {
 
     (*(volatile unsigned short *)0x04000010) = 0;
     (*(volatile unsigned short *)0x04000012) = 0;
-
+    hOff = 0;
+    spritehOff=0;
+    pufflehOff=0;
+    moved = 0;
     state = SPLASH;
     seed = 0;
+    cheat = 0;
+    screenBlock = 29;
 
     (*(volatile unsigned short *)0x4000000) = 0 | (1 << 8);
 }
@@ -1753,35 +1780,50 @@ void goToGame() {
     DMANow(3, spritesheetPal, ((unsigned short *)0x5000200), 512 / 2);
 
     (*(volatile unsigned short *)0x4000000) = 0 | (1 << 8) | (1 << 12);
-    (*(volatile unsigned short *)0x4000008) = (0 << 7) | (1 << 14) | ((0) << 2) | ((30) << 8);
+    (*(volatile unsigned short *)0x4000008) = (0 << 7) | (1 << 14) | ((0) << 2) | ((29) << 8);
 
 
 
 
-    DMANow(3, gameScreenPal, ((unsigned short *)0x5000000), 256);
-    DMANow(3, gameScreenTiles, &((charblock *)0x6000000)[0], 6400/2);
-    DMANow(3, gameScreenMap, &((screenblock *)0x6000000)[30], 6144/2);
+    DMANow(3, fullBackgroundPal, ((unsigned short *)0x5000000), 256);
+    DMANow(3, fullBackgroundTiles, &((charblock *)0x6000000)[0], 10208/2);
+    DMANow(3, fullBackgroundMap, &((screenblock *)0x6000000)[29], 8192/2);
 
 
 
     hideSprites();
     DMANow(3, shadowOAM, ((OBJ_ATTR *)(0x7000000)), 128*4);
 
-
     state = GAME;
-
 }
 
 
 void game() {
     updateGame();
     drawGame();
+    if(hOff > 256) {
+        screenBlock++;
+        hOff -= 256;
+        (*(volatile unsigned short *)0x4000008) = (0 << 7) | (1 << 14) | ((0) << 2) | ((screenBlock) << 8);
+    }
+
+    if(pufflehOff > 512) {
+        pufflehOff -=512;
+        spritehOff -=512;
+    }
 
     if ((!(~(oldButtons) & ((1 << 1))) && (~buttons & ((1 << 1))))) {
         goToPause();
         pauseSound();
     }
-    if (puffle.worldCol >= 475) {
+    if ((!(~(oldButtons) & ((1 << 8))) && (~buttons & ((1 << 8))))) {
+        cheat = 1;
+        gasLevel = 100;
+    }
+    if (cheat) {
+        ((unsigned short *)0x5000200)[4] += 17;
+    }
+    if (puffle.worldCol >= 700) {
         stopSound();
         goToWin();
     }
@@ -1789,6 +1831,7 @@ void game() {
         stopSound();
         goToLose();
     }
+    (*(volatile unsigned short *)0x04000010) = hOff;
 }
 
 
@@ -1812,13 +1855,11 @@ void goToPause() {
 
 
     state = PAUSE;
-
-
 }
 
 
 void pause() {
-    if ((!(~(oldButtons) & ((1 << 1))) && (~buttons & ((1 << 1))))) {
+    if ((!(~(oldButtons) & ((1 << 2))) && (~buttons & ((1 << 2))))) {
         goToSplash();
     }
     if ((!(~(oldButtons) & ((1 << 3))) && (~buttons & ((1 << 3))))) {
@@ -1829,10 +1870,14 @@ void pause() {
 
 
 void goToWin() {
+
     DMANow(3, winScreenPal, ((unsigned short *)0x5000000), 256);
 
 
     (*(volatile unsigned short *)0x4000008) = (0 << 14) | ((31) << 8);
+    hOff = 0;
+    spritehOff=0;
+    pufflehOff=0;
 
     (*(volatile unsigned short *)0x04000010) = 0;
     (*(volatile unsigned short *)0x04000012) = 0;
@@ -1848,12 +1893,11 @@ void goToWin() {
 
 
     state = WIN;
-
-
 }
 
 
 void win() {
+    drawScore();
     if ((!(~(oldButtons) & ((1 << 1))) && (~buttons & ((1 << 1))))) {
         goToSplash();
     }
@@ -1865,7 +1909,9 @@ void goToLose() {
 
 
     (*(volatile unsigned short *)0x4000008) = (0 << 14) | ((31) << 8);
-
+    hOff = 0;
+    spritehOff=0;
+    pufflehOff=0;
     (*(volatile unsigned short *)0x04000010) = 0;
     (*(volatile unsigned short *)0x04000012) = 0;
 
@@ -1886,6 +1932,7 @@ void goToLose() {
 
 
 void lose() {
+     drawScore();
     if ((!(~(oldButtons) & ((1 << 1))) && (~buttons & ((1 << 1))))) {
         goToSplash();
     }

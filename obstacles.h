@@ -1,7 +1,8 @@
 //Constants
-#define COINCOUNT 10
-#define FUELCOUNT 3
-#define BALLOONCOUNT 7
+#define COINCOUNT 30
+#define FUELCOUNT 2
+#define BALLOONCOUNT 20
+
 
 //Struct for Balloons
 typedef struct {
@@ -59,3 +60,5 @@ void updateCoin();
 BALLOON balloons[BALLOONCOUNT];
 FUEL fuels[FUELCOUNT];
 COIN coins[COINCOUNT];
+
+int cheat;

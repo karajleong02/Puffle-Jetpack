@@ -106,7 +106,9 @@ int collision(int colA, int rowA, int widthA, int heightA, int colB, int rowB, i
 
 
 
+
 typedef struct {
+    int direction;
     int worldRow;
     int worldCol;
     int origCol;
@@ -126,21 +128,26 @@ void updatePlayer();
 void initBullet();
 void fireBullet();
 void drawBullet();
-void updateBullet(BULLET *);
+void updateBullet();
 void setFuelLevel(int);
 void drawUI();
+void drawScore();
 
 
 
 extern int vOff;
 extern int hOff;
+extern int pufflehOff;
+extern int spritehOff;
 extern int score;
 extern int lives;
+extern int screenBlock;
 extern float gasLevel;
 extern SPRITE puffle;
-BULLET bullets[5];
+BULLET bullets[8];
 # 3 "game.c" 2
 # 1 "obstacles.h" 1
+
 
 
 
@@ -199,9 +206,11 @@ void drawCoin();
 void updateCoin();
 
 
-BALLOON balloons[7];
-FUEL fuels[3];
-COIN coins[10];
+BALLOON balloons[20];
+FUEL fuels[2];
+COIN coins[30];
+
+int cheat;
 # 4 "game.c" 2
 # 1 "spritesheet.h" 1
 # 21 "spritesheet.h"
@@ -213,11 +222,14 @@ extern const unsigned short spritesheetPal[256];
 
 int vOff;
 int hOff;
+int pufflehOff;
+int spritehOff;
 int score = 0;
 int lives = 3;
+int screenBlock;
 float gasLevel = 100;
 SPRITE puffle;
-BULLET bullets[5];
+BULLET bullets[8];
 
 
 enum {PUFFLERIGHT, PUFFLELEFT};
@@ -229,6 +241,7 @@ void initGame() {
     initBullet();
     vOff = 0;
     hOff = 9;
+    screenBlock = 29;
     score = 0;
     lives = 3;
     gasLevel = 100;
@@ -240,17 +253,17 @@ void drawGame() {
     drawUI();
     drawBullet();
 
-    (*(volatile unsigned short *)0x04000010) = hOff;
-
     waitForVBlank();
     DMANow(3, shadowOAM, ((OBJ_ATTR *)(0x7000000)), 128*4);
 }
 
 void updateGame () {
-    setFuelLevel(0);
+    if (!cheat) {
+        setFuelLevel(0);
+    }
     updateObstacles();
     updatePlayer();
-    for (int i = 0; i < 5; i++) {
+    for (int i = 0; i < 8; i++) {
   updateBullet(&bullets[i]);
  }
 }
@@ -260,7 +273,7 @@ void initPlayer() {
     puffle.worldCol = 14;
 
 
-    puffle.rdel = 1;
+    puffle.rdel = -1;
     puffle.cdel = 1;
     puffle.width = 24;
     puffle.height = 32;
@@ -277,7 +290,7 @@ void drawPlayer() {
         shadowOAM[0].attr0 |= (2 << 8);
     } else {
         shadowOAM[0].attr0 = ((puffle.worldRow - vOff) & 0xFF) | (0 << 13) | (0 << 14);
-        shadowOAM[0].attr1 = ((puffle.worldCol - hOff) & 0x1FF) | (2 << 14);
+        shadowOAM[0].attr1 = ((puffle.worldCol - pufflehOff) & 0x1FF) | (2 << 14);
         shadowOAM[0].attr2 = ((0) << 12) | ((2 + 4 * puffle.curFrame)*32 + (7 + 4 * puffle.aniState));
     }
 }
@@ -288,26 +301,27 @@ void updatePlayer() {
             puffle.worldCol -= puffle.cdel;
             puffle.aniState = PUFFLELEFT;
             if (hOff > 0 && (puffle.worldCol - hOff) < 240 / 2) {
-                hOff--;
-
+                hOff-=puffle.cdel;
+                pufflehOff-=puffle.cdel;
+                spritehOff-=puffle.cdel;
             }
         }
-
     }
     if((~((*(volatile unsigned short *)0x04000130)) & ((1 << 4)))) {
-        if (puffle.worldCol + puffle.width < 560) {
+        puffle.aniState = PUFFLERIGHT;
+        if (puffle.worldCol + puffle.width < 1024) {
             puffle.worldCol += puffle.cdel;
-            puffle.aniState = PUFFLERIGHT;
-            if (hOff < 560 - 240 && (puffle.worldCol + hOff) > 240 / 2) {
-                hOff++;
+            if (screenBlock < 31 && (hOff < 1024 - 240) && (puffle.worldCol + pufflehOff) > 240 / 2) {
+                hOff+=puffle.cdel;
+                pufflehOff+=puffle.cdel;
+                spritehOff+=puffle.cdel;
             }
         }
 
     }
     if((~((*(volatile unsigned short *)0x04000130)) & ((1 << 6)))) {
         if (puffle.worldRow > 12) {
-            puffle.worldRow -= puffle.rdel;
-
+            puffle.worldRow += puffle.rdel;
             if (vOff > 0 && ((puffle.worldRow - vOff) < (160 / 2))) {
                 vOff--;
             }
@@ -316,7 +330,7 @@ void updatePlayer() {
     }
     if((~((*(volatile unsigned short *)0x04000130)) & ((1 << 7)))) {
         if ((puffle.worldRow + puffle.height) < 160) {
-            puffle.worldRow += puffle.rdel;
+            puffle.worldRow -= puffle.rdel;
 
             if (vOff < 160 - 160 && (puffle.worldRow + vOff) > 160 / 2) {
                 vOff++;
@@ -338,11 +352,12 @@ void updatePlayer() {
 }
 
 void initBullet() {
-    for (int i = 0; i < 5; i++) {
+    for (int i = 0; i < 8; i++) {
+        bullets[i].direction = 0;
         bullets[i].worldRow = puffle.worldRow;
         bullets[i].worldCol = puffle.worldCol;
         bullets[i].origCol = bullets[i].worldCol;
-        bullets[i].cdel = 1;
+        bullets[i].cdel = 2;
         bullets[i].width = 7;
         bullets[i].height = 3;
         bullets[i].active = 0;
@@ -350,10 +365,16 @@ void initBullet() {
 }
 
 void fireBullet() {
-    for(int i = 0; i < 5; i++) {
+    for(int i = 0; i < 8; i++) {
   if(!bullets[i].active) {
    bullets[i].worldRow = puffle.worldRow + (puffle.height / 2);
-   bullets[i].worldCol = puffle.worldCol + puffle.width;
+            if (puffle.aniState == PUFFLELEFT) {
+                bullets[i].direction = 1;
+                bullets[i].worldCol = puffle.worldCol;
+            } else if (puffle.aniState == PUFFLERIGHT){
+                bullets[i].direction = 2;
+                bullets[i].worldCol = puffle.worldCol + puffle.width;
+            }
             bullets[i].origCol = bullets[i].worldCol;
    bullets[i].active = 1;
    break;
@@ -362,32 +383,40 @@ void fireBullet() {
 }
 
 void drawBullet() {
-    for(int in = 0; in < 5; in++) {
+    for(int in = 0; in < 8; in++) {
         if (bullets[in].active) {
-            shadowOAM[in+21].attr0 = bullets[in].worldRow | (0 << 13) | (1 << 14);
-            shadowOAM[in+21].attr1 = (bullets[in].worldCol-hOff) | (0 << 14);
-            shadowOAM[in+21].attr2 = ((0) << 12) | ((4)*32 + (0));
+            shadowOAM[in+55].attr0 = bullets[in].worldRow & 0xFF | (0 << 13) | (1 << 14);
+            shadowOAM[in+55].attr1 = (bullets[in].worldCol - pufflehOff) & 0x1FF | (0 << 14);
+            shadowOAM[in+55].attr2 = ((0) << 12) | ((4)*32 + (0));
         } else {
-            shadowOAM[in+21].attr0 = (2 << 8);
+            shadowOAM[in+55].attr0 = (2 << 8);
         }
     }
 }
 
 void updateBullet(BULLET *b) {
     if (b->active) {
-  if (b->worldCol + b->width <= 560 || b->worldCol - b-> origCol < 240) {
-   b->worldCol += b->cdel;
-  } else {
-   b->active = 0;
-  }
+  if (b->direction == 2) {
+            if (b->worldCol + b->width <= 1024 || b->worldCol - b-> origCol < 240) {
+                b->worldCol += (b->cdel);
+            } else {
+                b->active = 0;
+            }
+        } else if (b->direction == 1){
+            if(b->worldCol >= 0 || b->origCol - b->worldCol < 240) {
+                b->worldCol -= b->cdel;
+            } else {
+                b->active = 0;
+            }
+        }
+
  }
-    for (int j = 0; j < 7; j++) {
+    for (int j = 0; j < 20; j++) {
         if (collision(balloons[j].worldCol, balloons[j].worldRow, balloons[j].width, balloons[j].height, b->worldCol, b->worldRow, b->width, b->height)){
             b->active = 0;
             balloons[j].active = 0;
             shadowOAM[j+1].attr0 |= (2 << 8);
             balloons[j].hit = 1;
-
         }
     }
 
@@ -411,46 +440,54 @@ void setFuelLevel(int val) {
 
 void drawUI() {
 
-    shadowOAM[26].attr0 = 0 | (0 << 13) | (1 << 14);
-    shadowOAM[26].attr1 = 0 | (2 << 14);
-    shadowOAM[26].attr2 = ((0) << 12) | ((12)*32 + (0));
+    shadowOAM[64].attr0 = 0 | (0 << 13) | (1 << 14);
+    shadowOAM[64].attr1 = 0 | (2 << 14);
+    shadowOAM[64].attr2 = ((0) << 12) | ((12)*32 + (0));
 
 
-    shadowOAM[27].attr0 = 3 | (0 << 13) | (1 << 14);
-    shadowOAM[27].attr1 = 25 | (1 << 14);
+    shadowOAM[65].attr0 = 3 | (0 << 13) | (1 << 14);
+    shadowOAM[65].attr1 = 25 | (1 << 14);
 
     if (gasLevel > 75) {
-         shadowOAM[27].attr2 = ((0) << 12) | ((8)*32 + (0));
+         shadowOAM[65].attr2 = ((0) << 12) | ((8)*32 + (0));
     } else if (gasLevel > 50) {
-         shadowOAM[27].attr2 = ((0) << 12) | ((9)*32 + (0));
+         shadowOAM[65].attr2 = ((0) << 12) | ((9)*32 + (0));
     } else if (gasLevel > 25) {
-         shadowOAM[27].attr2 = ((0) << 12) | ((10)*32 + (0));
+         shadowOAM[65].attr2 = ((0) << 12) | ((10)*32 + (0));
     } else {
-         shadowOAM[27].attr2 = ((0) << 12) | ((11)*32 + (0));
+         shadowOAM[65].attr2 = ((0) << 12) | ((11)*32 + (0));
     }
 
 
-    shadowOAM[28].attr0 = 0 | (0 << 13) | (1 << 14);
-    shadowOAM[28].attr1 = 208 | (1 << 14);
+    shadowOAM[66].attr0 = 0 | (0 << 13) | (1 << 14);
+    shadowOAM[66].attr1 = 208 | (1 << 14);
 
     if (lives == 3) {
-        shadowOAM[28].attr2 = ((0) << 12) | ((5)*32 + (0));
+        shadowOAM[66].attr2 = ((0) << 12) | ((5)*32 + (0));
     } else if (lives == 2) {
-        shadowOAM[28].attr2 = ((0) << 12) | ((6)*32 + (0));
+        shadowOAM[66].attr2 = ((0) << 12) | ((6)*32 + (0));
     } else if (lives == 1) {
-        shadowOAM[28].attr2 = ((0) << 12) | ((7)*32 + (0));
+        shadowOAM[66].attr2 = ((0) << 12) | ((7)*32 + (0));
     }
 
+    drawScore();
+}
 
-    shadowOAM[29].attr0 = 0 | (0 << 13) | (1 << 14);
-    shadowOAM[29].attr1 = 65 | (2 << 14);
-    shadowOAM[29].attr2 = ((0) << 12) | ((14)*32 + (0));
+void drawScore() {
 
-    shadowOAM[30].attr0 = 3 | (0 << 13) | (0 << 14);
-    shadowOAM[30].attr1 = 95 | (0 << 14);
-    shadowOAM[30].attr2 = ((0) << 12) | ((31)*32 + ((score / 10)));
+    shadowOAM[67].attr0 = 0 | (0 << 13) | (1 << 14);
+    shadowOAM[67].attr1 = 85 | (2 << 14);
+    shadowOAM[67].attr2 = ((0) << 12) | ((14)*32 + (0));
 
-    shadowOAM[31].attr0 = 3 | (0 << 13) | (0 << 14);
-    shadowOAM[31].attr1 = 101 | (0 << 14);
-    shadowOAM[31].attr2 = ((0) << 12) | ((31)*32 + (score % 10));
+    shadowOAM[68].attr0 = 3 | (0 << 13) | (0 << 14);
+    shadowOAM[68].attr1 = 115 | (0 << 14);
+    shadowOAM[68].attr2 = ((0) << 12) | ((31)*32 + ((score / 100)));
+
+    shadowOAM[69].attr0 = 3 | (0 << 13) | (0 << 14);
+    shadowOAM[69].attr1 = 121 | (0 << 14);
+    shadowOAM[69].attr2 = ((0) << 12) | ((31)*32 + ((score / 10) % 10));
+
+    shadowOAM[70].attr0 = 3 | (0 << 13) | (0 << 14);
+    shadowOAM[70].attr1 = 128 | (0 << 14);
+    shadowOAM[70].attr2 = ((0) << 12) | ((31)*32 + (score % 10));
 }

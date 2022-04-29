@@ -1,23 +1,9 @@
-// //MILESTONE 3
-// I was able to implement all the collisions with the player and the different obstacles. Each collision affects something,
-// (lives, fuel amount, score). When the values are updated, they are reflected in the top bar.
-// There is also a way for the player to win and lose. They win by crossing the line at the end of the background. The
-// player will lose either when fuel reaches 0, or they run out of lives. The score also increments by 5 everytime the player
-// collides with a coin. The player can also shoot bullets at the balloons by hitting A, and when they collide the balloons 
-// disappear. Use the arrow keys to move the player.
-
-// I have not finished the progress tracker at the bottom of the screen, since I haven't decided how to implement this yet.
-// This would most likely not use a timer, so I have to implement a timer as well for the gas levels to get it to decrement
-// at certain time intervals. I focused on the game this milestone, and didn't implement keeping track of and displaying the 
-// high scores at the end and beginning of the screen. There are no animations yet, so the balloon also doesn't "float".
-
-// One bug I have is that the sprites don't erase correctly or quickly enough when they go off the screen.
-// But this bugs does not negatively affect the gameplay.
 
 #include <stdlib.h>
 #include <stdio.h>
 #include "myLib.h"
 #include "gameScreen.h"
+#include "fullBackground.h"
 #include "splashScreen.h"
 #include "pauseScreen.h"
 #include "winScreen.h"
@@ -72,6 +58,7 @@ unsigned short oldButtons;
 OBJ_ATTR shadowOAM[128];
 
 int seed;
+int moved;
 
 int main() {
     initialize();
@@ -115,6 +102,8 @@ void initialize() {
     buttons = BUTTONS;
     oldButtons = 0;
 
+   
+
     setupInterrupts();
     setupSounds();
     // setupInterrupt();
@@ -141,9 +130,14 @@ void goToSplash() {
 
     REG_BG0HOFF = 0;
     REG_BG0VOFF = 0;
-
+    hOff = 0;
+    spritehOff=0;
+    pufflehOff=0;
+    moved = 0;
     state = SPLASH;
     seed = 0;
+    cheat = 0;
+    screenBlock = 29;
 
     REG_DISPCTL = MODE0 | BG0_ENABLE;
 }
@@ -214,35 +208,50 @@ void goToGame() {
     DMANow(3, spritesheetPal, SPRITEPALETTE, spritesheetPalLen / 2);
 
     REG_DISPCTL = MODE0 | BG0_ENABLE | SPRITE_ENABLE;
-    REG_BG0CNT = BG_4BPP | BG_SIZE_WIDE | BG_CHARBLOCK(0) | BG_SCREENBLOCK(30);
+    REG_BG0CNT = BG_4BPP | BG_SIZE_WIDE | BG_CHARBLOCK(0) | BG_SCREENBLOCK(29);
 
 
 
     // Load tiles to charblock and map to screenblock
-    DMANow(3, gameScreenPal, PALETTE, 256);
-    DMANow(3, gameScreenTiles, &CHARBLOCK[0], gameScreenTilesLen/2);
-    DMANow(3, gameScreenMap, &SCREENBLOCK[30], gameScreenMapLen/2);
+    DMANow(3, fullBackgroundPal, PALETTE, 256);
+    DMANow(3, fullBackgroundTiles, &CHARBLOCK[0], fullBackgroundTilesLen/2);
+    DMANow(3, fullBackgroundMap, &SCREENBLOCK[29], fullBackgroundMapLen/2);
 
 
     // re-hide the sprites
     hideSprites();
     DMANow(3, shadowOAM, OAM, 128*4);
 
-
     state = GAME;
-    // REG_DISPCTL = MODE0 | BG0_ENABLE;
 }
 
 // Runs every frame of the game state.
 void game() {
     updateGame();
-    drawGame();
+    drawGame(); 
+    if(hOff > 256) {
+        screenBlock++;
+        hOff -= 256;
+        REG_BG0CNT = BG_4BPP | BG_SIZE_WIDE | BG_CHARBLOCK(0) | BG_SCREENBLOCK(screenBlock);
+    }
+
+    if(pufflehOff > 512) {
+        pufflehOff -=512;
+        spritehOff -=512;
+    }
     
     if (BUTTON_PRESSED(BUTTON_B)) {
         goToPause();
         pauseSound();
     }
-    if (puffle.worldCol >= 475) {
+    if (BUTTON_PRESSED(BUTTON_R)) {
+        cheat = 1;
+        gasLevel = 100;
+    }
+    if (cheat) {
+        SPRITEPALETTE[4] += 17;
+    }
+    if (puffle.worldCol >= 700) {
         stopSound();
         goToWin();
     }
@@ -250,6 +259,7 @@ void game() {
         stopSound();
         goToLose();
     }
+    REG_BG0HOFF = hOff;
 }
 
 // Sets up the pause state.
@@ -273,13 +283,11 @@ void goToPause() {
 
 
     state = PAUSE;
-
-    // REG_DISPCTL = MODE0 | BG0_ENABLE;
 }
 
 // Runs every frame of the pause state.
 void pause() {
-    if (BUTTON_PRESSED(BUTTON_B)) {
+    if (BUTTON_PRESSED(BUTTON_SELECT)) {
         goToSplash();
     }
     if (BUTTON_PRESSED(BUTTON_START)) {
@@ -290,10 +298,14 @@ void pause() {
 
 // Sets up the win state.
 void goToWin() {
+    
     DMANow(3, winScreenPal, PALETTE, 256);
 
     // Set background 0 control register
     REG_BG0CNT = BG_SIZE_SMALL | BG_SCREENBLOCK(31);
+    hOff = 0;
+    spritehOff=0;
+    pufflehOff=0;
 
     REG_BG0HOFF = 0;
     REG_BG0VOFF = 0;
@@ -302,19 +314,18 @@ void goToWin() {
     DMANow(3, winScreenTiles, &CHARBLOCK[0], winScreenTilesLen/2);
     DMANow(3, winScreenMap, &SCREENBLOCK[31], winScreenMapLen/2);
 
-
+   
     // re-hide the sprites
     hideSprites();
     DMANow(3, shadowOAM, OAM, 128*4);
 
 
     state = WIN;
-
-    // REG_DISPCTL = MODE0 | BG0_ENABLE;
 }
 
 // Runs every frame of the win state.
 void win() {
+    drawScore();
     if (BUTTON_PRESSED(BUTTON_B)) {
         goToSplash();
     }
@@ -326,7 +337,9 @@ void goToLose() {
 
     // Set background 0 control register
     REG_BG0CNT = BG_SIZE_SMALL | BG_SCREENBLOCK(31);
-
+    hOff = 0;
+    spritehOff=0;
+    pufflehOff=0;
     REG_BG0HOFF = 0;
     REG_BG0VOFF = 0;
 
@@ -334,7 +347,7 @@ void goToLose() {
     DMANow(3, loseScreenTiles, &CHARBLOCK[0], loseScreenTilesLen/2);
     DMANow(3, loseScreenMap, &SCREENBLOCK[31], loseScreenMapLen/2);
 
-
+    
     // re-hide the sprites
     hideSprites();
     DMANow(3, shadowOAM, OAM, 128*4);
@@ -347,6 +360,7 @@ void goToLose() {
 
 // Runs every frame of the lose state.
 void lose() {
+     drawScore();
     if (BUTTON_PRESSED(BUTTON_B)) {
         goToSplash();
     }

@@ -1,10 +1,12 @@
 //Constants
-#define BULLETCOUNT 5
+#define BULLETCOUNT 8
 #define MAPHEIGHT 160
-#define MAPWIDTH 560
+#define MAPWIDTH 1024
+
 
 //Struct for Bullet
 typedef struct {
+    int direction;
     int worldRow;
     int worldCol;
     int origCol;
@@ -24,16 +26,20 @@ void updatePlayer();
 void initBullet();
 void fireBullet();
 void drawBullet();
-void updateBullet(BULLET *);
+void updateBullet();
 void setFuelLevel(int);
 void drawUI();
+void drawScore();
 
 
 //Variables
 extern int vOff;
 extern int hOff;
+extern int pufflehOff;
+extern int spritehOff;
 extern int score;
 extern int lives;
+extern int screenBlock;
 extern float gasLevel;
 extern SPRITE puffle;
 BULLET bullets[BULLETCOUNT];

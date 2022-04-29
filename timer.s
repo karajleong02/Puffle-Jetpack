@@ -34,7 +34,7 @@ interruptHandler:
 	ldr	r6, .L7+8
 	add	r7, r5, #1
 	ldr	r0, [r6]	@ float
-	mov	r1, #1065353216
+	mov	r1, #1073741824
 	str	r7, [r4]
 	ldr	r3, .L7+12
 	mov	lr, pc
@@ -134,5 +134,5 @@ setupInterrupts:
 	.comm	time_cs,4,4
 	.comm	time_s,4,4
 	.comm	time_m,4,4
-	.comm	bullets,140,4
+	.comm	bullets,256,4
 	.ident	"GCC: (devkitARM release 53) 9.1.0"

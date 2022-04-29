@@ -112,7 +112,9 @@ int collision(int colA, int rowA, int widthA, int heightA, int colB, int rowB, i
 
 
 
+
 typedef struct {
+    int direction;
     int worldRow;
     int worldCol;
     int origCol;
@@ -132,19 +134,23 @@ void updatePlayer();
 void initBullet();
 void fireBullet();
 void drawBullet();
-void updateBullet(BULLET *);
+void updateBullet();
 void setFuelLevel(int);
 void drawUI();
+void drawScore();
 
 
 
 extern int vOff;
 extern int hOff;
+extern int pufflehOff;
+extern int spritehOff;
 extern int score;
 extern int lives;
+extern int screenBlock;
 extern float gasLevel;
 extern SPRITE puffle;
-BULLET bullets[5];
+BULLET bullets[8];
 # 4 "timer.c" 2
 
 
@@ -158,26 +164,18 @@ inline void haltUntilInterrupt(){
   __asm__("swi 0x04 << 15");
 }
 
-
-
-
 void interruptHandler(void) {
 
   *(unsigned short*)0x4000208 = 0;
 
-
-
-
-
-
   if ( *(volatile unsigned short*)0x4000202 & 1<<4 ) {
     time_s++;
-    gasLevel--;
+    gasLevel-=2;
     if (time_s > 99) {
       time_s = time_s - 100;
     }
   }
-# 59 "timer.c"
+
   *(volatile unsigned short*)0x4000202 = *(volatile unsigned short*)0x4000202;
   *(unsigned short*)0x4000208 = 1;
 }
@@ -187,17 +185,9 @@ void enableTimerInterrupts(void) {
 
   *(unsigned short*)0x4000200 = 1<<4 ;
 
-
-
-
-
-
   *(volatile unsigned short*)0x4000106 = 1;
   *(volatile unsigned short*)0x4000104 = 65536 - 16384;
   *(volatile unsigned short*)0x4000106 = 3 | (1<<7) | (1<<6);
-
-
-
 
 }
 

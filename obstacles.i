@@ -106,7 +106,9 @@ int collision(int colA, int rowA, int widthA, int heightA, int colB, int rowB, i
 
 
 
+
 typedef struct {
+    int direction;
     int worldRow;
     int worldCol;
     int origCol;
@@ -126,21 +128,26 @@ void updatePlayer();
 void initBullet();
 void fireBullet();
 void drawBullet();
-void updateBullet(BULLET *);
+void updateBullet();
 void setFuelLevel(int);
 void drawUI();
+void drawScore();
 
 
 
 extern int vOff;
 extern int hOff;
+extern int pufflehOff;
+extern int spritehOff;
 extern int score;
 extern int lives;
+extern int screenBlock;
 extern float gasLevel;
 extern SPRITE puffle;
-BULLET bullets[5];
+BULLET bullets[8];
 # 3 "obstacles.c" 2
 # 1 "obstacles.h" 1
+
 
 
 
@@ -199,9 +206,11 @@ void drawCoin();
 void updateCoin();
 
 
-BALLOON balloons[7];
-FUEL fuels[3];
-COIN coins[10];
+BALLOON balloons[20];
+FUEL fuels[2];
+COIN coins[30];
+
+int cheat;
 # 4 "obstacles.c" 2
 # 1 "spritesheet.h" 1
 # 21 "spritesheet.h"
@@ -261,10 +270,10 @@ extern const signed char balloonPop_data[];
 
 
 
-BALLOON balloons[7];
-FUEL fuels[3];
-COIN coins[10];
-
+BALLOON balloons[20];
+FUEL fuels[2];
+COIN coins[30];
+cheat = 0;
 enum {UP};
 
 void initObstacles() {
@@ -287,8 +296,8 @@ void updateObstacles() {
 
 void initBalloons() {
     int number = 1;
-    for (int i = 0; i < 7; i++) {
-        balloons[i].worldCol = i * 57 + 42;
+    for (int i = 0; i < 20; i++) {
+        balloons[i].worldCol = (i * 33 + 42);
         balloons[i].worldRow = rand() % 124 + 12;
         balloons[i].shift = 0;
         balloons[i].rdel = 2;
@@ -305,13 +314,13 @@ void initBalloons() {
 
 
 void updateBalloons() {
-    for (int i = 0; i < 7; i++) {
+    for (int i = 0; i < 20; i++) {
         if(balloons[i].active) {
             if( collision(puffle.worldCol, puffle.worldRow, puffle.width, puffle.height, balloons[i].worldCol, balloons[i].worldRow, balloons[i].width, balloons[i].height)) {
                 balloons[i].hit = 1;
                 balloons[i].active = 0;
                 shadowOAM[i+1].attr0 |= (2 << 8);
-                playSoundB(balloonPop_data, balloonPop_length, 0);
+
                 lives--;
             }
             if( balloons[i].worldCol - hOff < 0) {
@@ -330,21 +339,23 @@ void updateBalloons() {
 }
 
 void drawBalloons() {
-    for (int i = 0; i < 7; i++) {
+    for (int i = 0; i < 20; i++) {
         if (!balloons[i].active) {
             shadowOAM[i+1].attr0 |= (2 << 8);
         } else {
-            shadowOAM[i+1].attr0 = (balloons[i].worldRow & 0xFF) | (0 << 13) | (2 << 14);
-            shadowOAM[i+1].attr1 = ((balloons[i].worldCol - hOff) & 0x1FF) | (2 << 14);
-            shadowOAM[i+1].attr2 = ((0) << 12) | ((2 + 4 * balloons[i].currFrame)*32 + (4));
+            if ((balloons[i].worldCol + balloons[i].width - spritehOff >= 0) &&(balloons[i].worldCol - spritehOff <= 240)){
+                shadowOAM[i+1].attr0 = (balloons[i].worldRow & 0xFF) | (0 << 13) | (2 << 14);
+                shadowOAM[i+1].attr1 = ((balloons[i].worldCol - spritehOff) & 0x1FF) | (2 << 14);
+                shadowOAM[i+1].attr2 = ((0) << 12) | ((2 + 4 * balloons[i].currFrame)*32 + (4));
+            }
         }
     }
 }
 
 void initFuel() {
     int number = -1;
-    for (int i = 0; i < 3; i++) {
-        fuels[i].worldCol = i * 140 + 97;
+    for (int i = 0; i < 2; i++) {
+        fuels[i].worldCol = (i * 224 + 100);
         fuels[i].worldRow = rand() % 124 + 12;
         fuels[i].shift = 0;
         fuels[i].width = 10;
@@ -356,11 +367,11 @@ void initFuel() {
 }
 
 void updateFuel() {
-    for (int i = 0; i < 3; i++) {
+    for (int i = 0; i < 2; i++) {
         if(!fuels[i].collected && collision(puffle.worldCol, puffle.worldRow, puffle.width, puffle.height, fuels[i].worldCol, fuels[i].worldRow, fuels[i].width, fuels[i].height)) {
             fuels[i].collected = 1;
             fuels[i].active = 0;
-            shadowOAM[i+8].attr0 |= (2 << 8);
+            shadowOAM[i+14].attr0 |= (2 << 8);
             playSoundB(fuelCollect_data, fuelCollect_length, 0);
             setFuelLevel(1);
         }
@@ -371,21 +382,25 @@ void updateFuel() {
 }
 
 void drawFuel() {
-    for (int i = 0; i < 3; i++) {
+    for (int i = 0; i < 2; i++) {
         if (!fuels[i].active) {
-            shadowOAM[i+8].attr0 |= (2 << 8);
+            shadowOAM[i+22].attr0 |= (2 << 8);
         } else {
-            shadowOAM[i+8].attr0 = (fuels[i].worldRow & 0xFF) | (0 << 13) | (0 << 14);
-            shadowOAM[i+8].attr1 = ((fuels[i].worldCol-hOff) & 0x1FF) | (1 << 14);
-            shadowOAM[i+8].attr2 = ((0) << 12) | ((2)*32 + (2));
+            if ((fuels[i].worldCol + fuels[i].width - spritehOff >= 0) && (fuels[i].worldCol - spritehOff <= 240)) {
+
+
+                shadowOAM[i+22].attr0 = (fuels[i].worldRow & 0xFF) | (0 << 13) | (0 << 14);
+                shadowOAM[i+22].attr1 = ((fuels[i].worldCol - spritehOff) & 0x1FF) | (1 << 14);
+                shadowOAM[i+22].attr2 = ((0) << 12) | ((2)*32 + (2));
+            }
         }
     }
 }
 
 void initCoin() {
     int number = -1;
-    for (int i = 0; i < 10; i++) {
-        coins[i].worldCol = i * 42 + 70;
+    for (int i = 0; i < 30; i++) {
+        coins[i].worldCol = (i * 21 + 70);
         coins[i].worldRow = rand() % 124 + 12;
         coins[i].shift = 0;
         coins[i].width = 6;
@@ -397,11 +412,11 @@ void initCoin() {
 }
 
 void updateCoin() {
-    for (int i = 0; i < 10; i++) {
+    for (int i = 0; i < 30; i++) {
         if(!coins[i].collected && collision(puffle.worldCol, puffle.worldRow, puffle.width, puffle.height, coins[i].worldCol, coins[i].worldRow, coins[i].width, coins[i].height)) {
             coins[i].collected = 1;
             coins[i].active = 0;
-            shadowOAM[i+11].attr0 |= (2 << 8);
+            shadowOAM[i+24].attr0 |= (2 << 8);
             playSoundB(coinCollect_data, coinCollect_length, 0);
             score+=5;
         }
@@ -412,13 +427,15 @@ void updateCoin() {
 }
 
 void drawCoin() {
-    for (int i = 0; i < 10; i++) {
+    for (int i = 0; i < 30; i++) {
         if (!coins[i].active) {
-            shadowOAM[i+11].attr0 |= (2 << 8);
+            shadowOAM[i+24].attr0 |= (2 << 8);
         } else {
-            shadowOAM[i+11].attr0 = (coins[i].worldRow & 0xFF) | (0 << 13) | (0 << 14);
-            shadowOAM[i+11].attr1 = ((coins[i].worldCol - hOff) & 0x1FF) | (1 << 14);
-            shadowOAM[i+11].attr2 = ((0) << 12) | ((2)*32 + (0));
+            if ((coins[i].worldCol + coins[i].width - spritehOff >= 0) &&(coins[i].worldCol - spritehOff <= 240)) {
+                shadowOAM[i+24].attr0 = (coins[i].worldRow & 0xFF) | (0 << 13) | (0 << 14);
+                shadowOAM[i+24].attr1 = ((coins[i].worldCol - spritehOff) & 0x1FF) | (1 << 14);
+                shadowOAM[i+24].attr2 = ((0) << 12) | ((2)*32 + (0));
+            }
         }
     }
 }
